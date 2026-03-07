@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOA ライフスタイルケア実践アプリ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;500;700&family=Noto+Sans+JP:wght@300;400;500&family=Shippori+Mincho:wght@400;600;800&display=swap');
+
+  :root {
+    --gold: #C8A84B;
+    --gold-light: #E8D4A0;
+    --gold-dark: #9A7A30;
+    --ink: #1A1208;
+    --cream: #FBF7EE;
+    --warm-white: #F5F0E8;
+    --red-accent: #8B2020;
+    --red-light: rgba(139,32,32,0.1);
+    --green-deep: #2D4A2A;
+    --blue-deep: #1A2A4A;
+    --text-main: #2A2018;
+    --text-sub: #5A4A30;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Serif JP', serif;
+    background: var(--cream);
+    color: var(--text-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, var(--ink) 0%, #2A1A08 50%, #1A0A00 100%);
+    padding: 28px 20px 24px;
+    text-align: center;
+    position: relative;
+    border-bottom: 3px solid var(--gold);
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      45deg, transparent, transparent 20px,
+      rgba(200,168,75,0.03) 20px, rgba(200,168,75,0.03) 40px
+    );
+  }
+  .header-kamon {
+    font-size: 2rem;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 6px;
+    letter-spacing: 0.3em;
+  }
+  header h1 {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 1.05rem;
+    color: var(--gold-light);
+    letter-spacing: 0.15em;
+    font-weight: 600;
+    line-height: 1.8;
+  }
+  header .subtitle {
+    font-size: 0.72rem;
+    color: rgba(232,212,160,0.6);
+    letter-spacing: 0.2em;
+    margin-top: 4px;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  /* ===== NAV TABS ===== */
+  nav {
+    display: flex;
+    background: var(--ink);
+    border-bottom: 2px solid var(--gold-dark);
+    overflow-x: auto;
+  }
+  nav button {
+    flex: 1;
+    min-width: 72px;
+    padding: 12px 6px;
+    background: transparent;
+    border: none;
+    color: rgba(232,212,160,0.6);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+  }
+  nav button:hover { color: var(--gold-light); }
+  nav button.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+    background: rgba(200,168,75,0.08);
+  }
+
+  /* ===== SECTIONS ===== */
+  section { display: none; }
+  section.active { display: block; }
+
+  .sec-header {
+    background: linear-gradient(135deg, #1A1208, #2A1808);
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--gold-dark);
+  }
+  .sec-header h2 {
+    font-family: 'Shippori Mincho', serif;
+    color: var(--gold);
+    font-size: 1rem;
+    letter-spacing: 0.2em;
+    margin-bottom: 6px;
+  }
+  .sec-header p {
+    font-size: 0.72rem;
+    color: rgba(232,212,160,0.6);
+    font-family: 'Noto Sans JP', sans-serif;
+    line-height: 1.8;
+    letter-spacing: 0.08em;
+  }
+
+  /* ===== APP HERO ===== */
+  .app-hero {
+    background: linear-gradient(160deg, #0A0A14, #140A0A, #0A140A);
+    padding: 24px 20px 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--gold-dark);
+  }
+  .today-date {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.7rem;
+    color: rgba(200,168,75,0.6);
+    letter-spacing: 0.2em;
+    margin-bottom: 10px;
+  }
+  .app-hero h2 {
+    font-family: 'Shippori Mincho', serif;
+    color: var(--gold-light);
+    font-size: 1.05rem;
+    letter-spacing: 0.15em;
+    line-height: 1.9;
+  }
+
+  /* ===== CATEGORY FILTER ===== */
+  .cat-filter {
+    display: flex;
+    gap: 6px;
+    padding: 12px 16px;
+    overflow-x: auto;
+    background: white;
+    border-bottom: 1px solid var(--gold-light);
+  }
+  .cat-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    background: white;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.7rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    color: var(--text-sub);
+  }
+  .cat-btn:hover { border-color: var(--gold); }
+  .cat-btn-all.active { background: var(--ink); color: var(--gold); border-color: var(--ink); }
+  .cat-btn-joka.active { background: var(--red-accent); color: white; border-color: var(--red-accent); }
+  .cat-btn-shizen.active { background: var(--green-deep); color: white; border-color: var(--green-deep); }
+  .cat-btn-bijutsu.active { background: var(--blue-deep); color: white; border-color: var(--blue-deep); }
+  .cat-btn-life.active { background: var(--gold-dark); color: white; border-color: var(--gold-dark); }
+
+  /* ===== MESSAGE CARD ===== */
+  .msg-card {
+    margin: 16px;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(26,18,8,0.1);
+    border: 1px solid var(--gold-light);
+  }
+  .msg-category {
+    padding: 8px 16px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+  }
+  .msg-source {
+    padding: 4px 16px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.65rem;
+    color: var(--gold-dark);
+    background: var(--warm-white);
+    border-top: 1px solid var(--gold-light);
+    border-bottom: 1px solid var(--gold-light);
+    letter-spacing: 0.08em;
+  }
+  .msg-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 1.05rem;
+    color: var(--text-main);
+    padding: 14px 16px 8px;
+    letter-spacing: 0.1em;
+    line-height: 1.5;
+  }
+  .msg-body {
+    padding: 0 16px 12px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.78rem;
+    line-height: 2;
+    color: var(--text-sub);
+  }
+  .msg-quote {
+    margin: 0 16px 12px;
+    padding: 10px 14px;
+    background: var(--warm-white);
+    border-left: 3px solid var(--gold);
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.78rem;
+    color: var(--text-main);
+    line-height: 1.9;
+    border-radius: 0 6px 6px 0;
+  }
+  .msg-action {
+    margin: 0 16px 16px;
+    padding: 10px 12px;
+    background: rgba(200,168,75,0.06);
+    border-radius: 8px;
+    border: 1px solid rgba(200,168,75,0.2);
+  }
+  .msg-action-title {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.65rem;
+    color: var(--gold-dark);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+  .msg-action-text {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.78rem;
+    line-height: 1.9;
+    color: var(--text-main);
+  }
+
+  /* ===== GENERATE BUTTON ===== */
+  .btn-generate {
+    display: block;
+    width: calc(100% - 32px);
+    margin: 0 16px 20px;
+    padding: 14px;
+    background: linear-gradient(135deg, #1A1208, #2A1A08, #1A1208);
+    color: var(--gold);
+    border: 1px solid var(--gold-dark);
+    border-radius: 8px;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.88rem;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .btn-generate:hover {
+    background: linear-gradient(135deg, #2A2018, #3A2808, #2A2018);
+    border-color: var(--gold);
+  }
+
+  /* ===== LIST VIEW ===== */
+  .msg-list { padding: 0 16px 16px; }
+  .msg-list-item {
+    background: white;
+    border: 1px solid var(--gold-light);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .msg-list-item:hover {
+    border-color: var(--gold);
+    box-shadow: 0 2px 8px rgba(200,168,75,0.15);
+    transform: translateY(-1px);
+  }
+  .msg-list-cat {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    margin-bottom: 4px;
+  }
+  .msg-list-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    margin-bottom: 4px;
+    letter-spacing: 0.08em;
+  }
+  .msg-list-preview {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.7rem;
+    color: var(--text-sub);
+    line-height: 1.7;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  /* みおしえボタン */
+  .btn-mieoshi {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 10px;
+    background: rgba(200,168,75,0.1);
+    border: 1px solid var(--gold-dark);
+    border-radius: 20px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.62rem;
+    color: var(--gold-dark);
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    transition: all 0.2s;
+  }
+  .btn-mieoshi:hover {
+    background: var(--gold);
+    color: white;
+    border-color: var(--gold);
+  }
+
+  /* ===== SESSHU CARD ===== */
+  .sesshu-card {
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--gold-light);
+    box-shadow: 0 4px 20px rgba(26,18,8,0.12);
+  }
+  .sesshu-time-block {
+    background: linear-gradient(135deg, #1A0A00, #2A1208, #1A0A00);
+    text-align: center;
+    padding: 24px 20px 20px;
+    border-bottom: 2px solid var(--gold-dark);
+    position: relative;
+  }
+  .sesshu-time-block::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      45deg, transparent, transparent 15px,
+      rgba(200,168,75,0.02) 15px, rgba(200,168,75,0.02) 30px
+    );
+  }
+  .sesshu-label {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.65rem;
+    color: rgba(200,168,75,0.7);
+    letter-spacing: 0.2em;
+    margin-bottom: 10px;
+    position: relative; z-index: 1;
+  }
+  .sesshu-min-label {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.65rem;
+    color: rgba(200,168,75,0.5);
+    letter-spacing: 0.15em;
+    position: relative; z-index: 1;
+  }
+  .sesshu-time {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 4rem;
+    color: var(--gold);
+    line-height: 1.1;
+    position: relative; z-index: 1;
+  }
+  .sesshu-time-unit {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 1.5rem;
+    color: var(--gold-light);
+    position: relative; z-index: 1;
+  }
+  .sesshu-msg {
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid var(--warm-white);
+  }
+  .sesshu-msg-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 1rem;
+    color: var(--text-main);
+    letter-spacing: 0.1em;
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+  .sesshu-msg-body {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.76rem;
+    color: var(--text-sub);
+    line-height: 2;
+  }
+  .sesshu-quote {
+    margin: 0 18px 14px;
+    padding: 10px 14px;
+    background: var(--warm-white);
+    border-left: 3px solid var(--gold);
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.76rem;
+    color: var(--text-main);
+    line-height: 1.9;
+    border-radius: 0 6px 6px 0;
+    margin-top: 14px;
+  }
+  /* 急所・施術根拠ブロック */
+  .sesshu-kyusho {
+    margin: 0 18px 14px;
+    background: rgba(139,32,32,0.04);
+    border: 1px solid rgba(139,32,32,0.15);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .sesshu-kyusho-title {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.65rem;
+    color: var(--red-accent);
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+  }
+  .sesshu-kyusho-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .sesshu-kyusho-item:last-child { margin-bottom: 0; }
+  .sesshu-kyusho-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .sesshu-kyusho-body { flex: 1; }
+  .sesshu-kyusho-name {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.82rem;
+    color: var(--red-accent);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    margin-bottom: 2px;
+  }
+  .sesshu-kyusho-desc {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.7rem;
+    color: var(--text-sub);
+    line-height: 1.7;
+  }
+  /* 楽屋舞台ボックス */
+  .sesshu-concept {
+    margin: 0 18px 14px;
+    background: rgba(26,42,74,0.05);
+    border: 1px solid rgba(26,42,74,0.15);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .sesshu-concept-title {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.65rem;
+    color: var(--blue-deep);
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
+  }
+  .sesshu-concept-body {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.72rem;
+    color: var(--text-sub);
+    line-height: 1.8;
+  }
+  /* 施術配分 */
+  .sesshu-parts {
+    padding: 14px 18px 18px;
+    background: var(--warm-white);
+  }
+  .sesshu-parts-title {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.65rem;
+    color: var(--gold-dark);
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
+  }
+  .sesshu-parts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .sesshu-part-item {
+    background: white;
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--gold-light);
+  }
+  .sesshu-part-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .sesshu-part-text {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.72rem;
+    color: var(--text-main);
+    line-height: 1.4;
+  }
+  .sesshu-part-time {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.82rem;
+    color: var(--gold-dark);
+    font-weight: 600;
+  }
+  /* 浄化作用プロセス */
+  .sesshu-joka-process {
+    margin: 0 18px 14px;
+    display: flex;
+    gap: 6px;
+  }
+  .joka-step {
+    flex: 1;
+    background: var(--warm-white);
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: center;
+    border: 1px solid rgba(200,168,75,0.2);
+    position: relative;
+  }
+  .joka-step-num {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.65rem;
+    color: var(--gold-dark);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .joka-step-name {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.7rem;
+    color: var(--text-main);
+    display: block;
+    margin-bottom: 3px;
+    font-weight: 500;
+  }
+  .joka-step-desc {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.6rem;
+    color: var(--text-sub);
+    line-height: 1.5;
+  }
+
+  /* ===== HINAGATA ===== */
+  .hinagata-container { padding: 16px; }
+  .hinagata-title {
+    text-align: center;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.75rem;
+    color: var(--gold-dark);
+    letter-spacing: 0.2em;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--gold-light);
+  }
+  .hinagata-diagram { margin-bottom: 16px; }
+  .hina-level { margin-bottom: 0; }
+  .hina-box {
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .hina-box:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .hina-dai {
+    background: linear-gradient(135deg, #1A1208, #3A2A10);
+    border: 1px solid var(--gold);
+  }
+  .hina-chuu {
+    background: linear-gradient(135deg, #0A180A, #1A3A1A);
+    border: 1px solid #5A8A5A;
+  }
+  .hina-ko {
+    background: linear-gradient(135deg, #0A0A1A, #1A1A3A);
+    border: 1px solid #5A5A8A;
+  }
+  .hina-label {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    margin-bottom: 4px;
+    opacity: 0.7;
+  }
+  .hina-dai .hina-label { color: var(--gold-light); }
+  .hina-chuu .hina-label { color: #A0C8A0; }
+  .hina-ko .hina-label { color: #A0A0C8; }
+  .hina-name {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 1rem;
+    letter-spacing: 0.15em;
+    margin-bottom: 4px;
+  }
+  .hina-dai .hina-name { color: var(--gold); }
+  .hina-chuu .hina-name { color: #8ACA8A; }
+  .hina-ko .hina-name { color: #8A8ACA; }
+  .hina-sites {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+  }
+  .hina-dai .hina-sites { color: var(--gold-light); }
+  .hina-chuu .hina-sites { color: #A0C8A0; }
+  .hina-ko .hina-sites { color: #A0A0C8; }
+  .hina-connector { height: 10px; border-left: 2px dashed rgba(200,168,75,0.3); margin-left: 50%; }
+  .hina-arrow { text-align: center; font-size: 0.65rem; color: rgba(200,168,75,0.5); font-family: 'Noto Sans JP', sans-serif; letter-spacing: 0.1em; margin: 2px 0; }
+  .resonance-box {
+    background: white;
+    border-radius: 10px;
+    padding: 14px 16px;
+    border: 1px solid var(--gold-light);
+    margin-bottom: 12px;
+  }
+  .resonance-box h3 {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.88rem;
+    color: var(--gold-dark);
+    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+  }
+  .resonance-box p {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.76rem;
+    color: var(--text-sub);
+    line-height: 2;
+  }
+  .photo-strip { display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; padding-bottom: 6px; }
+  .photo-card { flex-shrink: 0; width: 110px; }
+  .photo-card img { width: 100%; height: 70px; object-fit: cover; border-radius: 6px; display: block; border: 1px solid var(--gold-light); }
+  .photo-cap { font-family: 'Noto Sans JP', sans-serif; font-size: 0.6rem; color: var(--text-sub); text-align: center; margin-top: 4px; }
+  .three-legs { display: flex; gap: 8px; margin-top: 8px; }
+  .leg-card {
+    flex: 1;
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+    border: 1px solid;
+  }
+  .leg-joka { background: rgba(139,32,32,0.06); border-color: rgba(139,32,32,0.2); }
+  .leg-shoku { background: rgba(45,74,42,0.06); border-color: rgba(45,74,42,0.2); }
+  .leg-bijutsu { background: rgba(26,42,74,0.06); border-color: rgba(26,42,74,0.2); }
+  .leg-icon { font-size: 1.5rem; display: block; margin-bottom: 6px; }
+  .leg-name {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.82rem;
+    margin-bottom: 4px;
+    letter-spacing: 0.08em;
+  }
+  .leg-joka .leg-name { color: var(--red-accent); }
+  .leg-shoku .leg-name { color: var(--green-deep); }
+  .leg-bijutsu .leg-name { color: var(--blue-deep); }
+  .leg-desc {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.62rem;
+    color: var(--text-sub);
+    line-height: 1.6;
+  }
+
+  /* ===== ABOUT ===== */
+  .about-block {
+    margin: 16px 20px;
+    background: white;
+    border-radius: 10px;
+    padding: 18px;
+    border: 1px solid var(--gold-light);
+  }
+  .about-block h3 {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.92rem;
+    color: var(--gold-dark);
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--gold-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .about-block p {
+    font-size: 0.78rem;
+    line-height: 2;
+    color: var(--text-sub);
+    font-family: 'Noto Sans JP', sans-serif;
+    margin-bottom: 10px;
+  }
+  .about-block p:last-child { margin-bottom: 0; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(26,18,8,0.75);
+    z-index: 1000;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--cream);
+    width: 100%;
+    max-width: 600px;
+    max-height: 85vh;
+    border-radius: 16px 16px 0 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-header {
+    background: linear-gradient(135deg, var(--ink), #2A1A08);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--gold-dark);
+    flex-shrink: 0;
+  }
+  .modal-header h3 {
+    font-family: 'Shippori Mincho', serif;
+    color: var(--gold);
+    font-size: 0.95rem;
+    letter-spacing: 0.1em;
+  }
+  .modal-close {
+    background: none;
+    border: 1px solid rgba(200,168,75,0.3);
+    color: rgba(200,168,75,0.6);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-body {
+    overflow-y: auto;
+    padding: 16px 18px;
+    flex: 1;
+  }
+  /* み教え原典スタイル */
+  .mieoshi-section {
+    margin-top: 16px;
+    border-top: 1px solid var(--gold-light);
+    padding-top: 16px;
+  }
+  .mieoshi-section-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.88rem;
+    color: var(--red-accent);
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mieoshi-block {
+    background: white;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    border-left: 3px solid var(--gold);
+    border: 1px solid var(--gold-light);
+    border-left: 3px solid var(--gold);
+  }
+  .mieoshi-source {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.62rem;
+    color: var(--gold-dark);
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .mieoshi-text {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.78rem;
+    color: var(--text-main);
+    line-height: 2.1;
+  }
+
+  /* Loading */
+  .loading {
+    text-align: center;
+    padding: 20px;
+    color: var(--gold);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+  }
+
+  footer {
+    background: var(--ink);
+    padding: 16px 20px;
+    text-align: center;
+    border-top: 1px solid var(--gold-dark);
+    font-size: 0.65rem;
+    color: rgba(232,212,160,0.4);
+    font-family: 'Noto Sans JP', sans-serif;
+    letter-spacing: 0.1em;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="header-kamon">✦ MOA ✦</span>
+  <h1>MOA ライフスタイルケア<br>実践アプリ</h1>
+  <div class="subtitle">令和8年3月 ／ 箱根の建設と共に歩む</div>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('hinagata', this)">🏯 ひな型<br>呼応図</button>
+  <button onclick="showTab('today', this)">☀ 今日の<br>メッセージ</button>
+  <button onclick="showTab('list', this)">📖 項目別<br>一覧</button>
+  <button onclick="showTab('sesshu', this)">🌟 今日の<br>施術</button>
+  <button onclick="showTab('about', this)">🌿 三大<br>事業</button>
+</nav>
+
+<!-- ===== HINAGATA ===== -->
+<section id="hinagata" class="active">
+  <div class="sec-header">
+    <h2>大・中・小 ひな型の呼応</h2>
+    <p>箱根の建設（大のひな型）の進展は<br>私たち一人ひとりの実践（小のひな型）と呼応する</p>
+  </div>
+
+  <div class="hinagata-container">
+    <div class="hinagata-title">— 霊体相呼応して進められる経綸 —</div>
+
+    <div class="hinagata-diagram">
+      <div class="hina-level">
+        <div class="hina-box hina-dai" onclick="toggleDetail('detail-dai')">
+          <div class="hina-label">【大のひな型】 世界の霊的中心</div>
+          <div class="hina-name">☀ 箱根・熱海・京都</div>
+          <div class="hina-sites">光明会館建設 ／ MOA美術館 ／ 神仙郷</div>
+        </div>
+      </div>
+
+      <div class="hina-connector"></div>
+      <div class="hina-arrow">⬇ 霊界→現界への移写</div>
+      <div class="hina-connector"></div>
+
+      <div class="hina-level">
+        <div class="hina-box hina-chuu" onclick="toggleDetail('detail-chuu')">
+          <div class="hina-label">【中のひな型】 地域の拠点</div>
+          <div class="hina-name">🏥 療院・分院</div>
+          <div class="hina-sites">広島療院 ／ 地域の療院・分院</div>
+        </div>
+      </div>
+
+      <div class="hina-connector"></div>
+      <div class="hina-arrow">⬇ 実践の広がり</div>
+      <div class="hina-connector"></div>
+
+      <div class="hina-level">
+        <div class="hina-box hina-ko" onclick="toggleDetail('detail-ko')">
+          <div class="hina-label">【小のひな型】 日々の実践</div>
+          <div class="hina-name">🏠 個人・家庭</div>
+          <div class="hina-sites">皆さん一人ひとり ／ ご家族</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="detail-dai" style="display:none; margin-bottom:14px;">
+      <div class="resonance-box">
+        <h3>✦ 大のひな型の今</h3>
+        <p>令和8年2月、建設中の会館名称が正式に<strong style="color:var(--gold-dark)">「光明会館」</strong>と決定されました。昭和10年の立教以来、明主様が宣言された光明会館の建設がいよいよ現実の姿を現しつつあります。</p>
+      </div>
+      <div class="photo-strip">
+        <div class="photo-card">
+          <img src="https://izunome.net/wp-content/uploads/2023/04/image.png" onerror="this.parentElement.style.display='none'" alt="箱根">
+          <div class="photo-cap">📍 箱根光明台</div>
+        </div>
+        <div class="photo-card">
+          <img src="https://www.moaart.or.jp/assets/images/moa_top_img01.jpg" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/MOA_Museum_of_Art_Atami.jpg/320px-MOA_Museum_of_Art_Atami.jpg'" alt="MOA美術館">
+          <div class="photo-cap">📍 MOA美術館（熱海）</div>
+        </div>
+        <div class="photo-card">
+          <img src="https://izunome.net/wp-content/uploads/2022/10/logo.png" onerror="this.parentElement.style.display='none'" alt="神仙郷">
+          <div class="photo-cap">📍 京都神仙郷</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="detail-chuu" style="display:none; margin-bottom:14px;">
+      <div class="resonance-box">
+        <h3>✦ 中のひな型の役割</h3>
+        <p>療院・分院は大のひな型と小のひな型をつなぐ<strong style="color:#5A8A5A">「橋渡し役」</strong>。日本統合医療学会との連携、ライフスタイルケアの実践拠点として、地域に根ざした人づくりを進めています。</p>
+      </div>
+    </div>
+
+    <div id="detail-ko" style="display:none; margin-bottom:14px;">
+      <div class="resonance-box">
+        <h3>✦ 小のひな型の意味</h3>
+        <p>「神様の事はすべて型でゆく。小さい型を拡げれば、大きいものも拡がる」（明主様）。<strong style="color:#7AA8E8">皆さんお一人おひとりの日々の実践</strong>こそが、光明会館の建設と呼応し、新しい文明の創造に直結します。</p>
+      </div>
+    </div>
+
+    <div class="resonance-box" style="margin-bottom:16px;">
+      <h3>🌀 呼応の仕組み</h3>
+      <p>霊界に起こった事象がそのまま現界に移写される（霊主体従）。光明台の建設が進む今こそ、私たちの<strong>毎日の三大事業の実践</strong>が霊的に大のひな型と呼応し、地上天国建設を加速する力となります。</p>
+    </div>
+
+    <div class="three-legs">
+      <div class="leg-card leg-joka">
+        <span class="leg-icon">🌟</span>
+        <div class="leg-name">浄化療法</div>
+        <div class="leg-desc">霊の曇りを解消<br>自然治癒力を活かす</div>
+      </div>
+      <div class="leg-card leg-shoku">
+        <span class="leg-icon">🌾</span>
+        <div class="leg-name">自然食・農法</div>
+        <div class="leg-desc">霊気ある食で<br>体の内から健康に</div>
+      </div>
+      <div class="leg-card leg-bijutsu">
+        <span class="leg-icon">🎨</span>
+        <div class="leg-name">美術文化</div>
+        <div class="leg-desc">真善美の世界を<br>日常に取り入れる</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== TODAY MESSAGE ===== -->
+<section id="today">
+  <div class="app-hero">
+    <div class="today-date" id="today-date"></div>
+    <h2>今日の あなたへ<br>岡田先生からのメッセージ</h2>
+  </div>
+
+  <div class="cat-filter" style="margin-top:0;">
+    <button class="cat-btn cat-btn-all active" onclick="filterCat('all', this)">すべて</button>
+    <button class="cat-btn cat-btn-joka" onclick="filterCat('joka', this)">浄化療法</button>
+    <button class="cat-btn cat-btn-shizen" onclick="filterCat('shizen', this)">自然食・農法</button>
+    <button class="cat-btn cat-btn-bijutsu" onclick="filterCat('bijutsu', this)">美術文化</button>
+    <button class="cat-btn cat-btn-life" onclick="filterCat('life', this)">生き方</button>
+  </div>
+
+  <div id="msg-display"></div>
+  <button class="btn-generate" onclick="generateMessage()">✦ 新しいメッセージを受け取る ✦</button>
+</section>
+
+<!-- ===== LIST ===== -->
+<section id="list">
+  <div class="sec-header">
+    <h2>岡田先生のみ教え 項目一覧</h2>
+    <p>「究極の健康法」＋「浄化療法学習」より各テーマ<br>▶ 各項目から「み教え原典」を読むことができます</p>
+  </div>
+
+  <div class="cat-filter">
+    <button class="cat-btn cat-btn-all active" onclick="filterList('all', this)">すべて</button>
+    <button class="cat-btn cat-btn-joka" onclick="filterList('joka', this)">浄化</button>
+    <button class="cat-btn cat-btn-shizen" onclick="filterList('shizen', this)">食・農</button>
+    <button class="cat-btn cat-btn-bijutsu" onclick="filterList('bijutsu', this)">美術</button>
+    <button class="cat-btn cat-btn-life" onclick="filterList('life', this)">生き方</button>
+  </div>
+
+  <div class="msg-list" id="msg-list-container" style="margin-top:12px;"></div>
+</section>
+
+<!-- ===== SESSHU ===== -->
+<section id="sesshu">
+  <div class="app-hero" style="background: linear-gradient(160deg, #0A0A14, #0A1A0A, #14080A);">
+    <div class="today-date" id="sesshu-date"></div>
+    <h2 style="font-size:1rem;">今日の施術<br><span style="font-size:0.82rem;color:rgba(232,212,160,0.8);">岡田先生から今日の施術について<br>み教えをもとにご提案します</span></h2>
+  </div>
+
+  <div id="sesshu-display" style="margin:20px;">
+    <div style="text-align:center;padding:30px 0;color:var(--text-sub);font-family:'Noto Sans JP',sans-serif;font-size:0.82rem;letter-spacing:0.1em;">
+      下のボタンを押して、今日の施術提案を受け取りましょう
+    </div>
+  </div>
+
+  <button class="btn-generate" style="background:linear-gradient(135deg,#6A2020,#8B3030,#6A2020);" onclick="generateSesshu()">
+    🌟 今日の施術提案を受け取る 🌟
+  </button>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section id="about">
+  <div class="sec-header">
+    <h2>ライフスタイルケア 三大事業</h2>
+    <p>「霊体一致」の実践として日常に根付かせる</p>
+  </div>
+
+  <div class="about-block">
+    <h3>🌟 浄化療法</h3>
+    <p>「真の健康法とは、霊体を曇らせないようにすること」（岡田先生）。浄化療法は体内の毒素を溶解・排除する自然治癒力を引き出す実践です。</p>
+    <p>毎日の実践が霊の曇りを解消し、魂を輝かせます。家族・地域への施術の広がりが、そのままコミュニティの光となります。</p>
+  </div>
+
+  <div class="about-block">
+    <h3>🌾 自然食・自然農法</h3>
+    <p>明主様は昭和10年発刊の『日本医術講義録』に浄化療法と共に「真の営養学」を収録されました。食と医療は一体です。</p>
+    <p>霊気ある国産・自然農法産の食材を選び、手づくり味噌・発酵食を日常に。「食が医療を変える」——アメリカ・チェン医師も絶賛する実践です。</p>
+  </div>
+
+  <div class="about-block">
+    <h3>🎨 美術文化（美を楽しむ）</h3>
+    <p>「綺麗な花が咲き、いい景色がある——これを楽しまずわざわざまずいものを食い、粗末な着物を着るというのは一つの叛逆ですよ」（岡田先生）。</p>
+    <p>花を生ける、書を飾る、音楽を楽しむ、季節の美を味わう——日常に美を取り入れることが霊を主とした生き方そのものです。MOA美術館児童作品展への参加も大切な実践です。</p>
+  </div>
+
+  <div class="about-block">
+    <h3>✦ 究極の健康法とは</h3>
+    <p>「真の健康法とは、正しい想念と善徳を施す以外にはない」（岡田先生）。感謝の心で人に尽くし、霊の曇りをつくらない生き方——これが三大事業を超えた究極の健康法です。</p>
+    <p>大のひな型（光明会館の建設）と、私たち小のひな型（個と家）が霊的に呼応する今この時、毎日の実践の積み重ねが新しい文明の創造につながります。</p>
+  </div>
+</section>
+
+<!-- ===== MODAL ===== -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="modal-title">み教え詳細</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<footer>
+  MOA ライフスタイルケア実践アプリ ／ 令和8年3月<br>
+  「永遠のいのちを幸せに生きる」人づくりの輪を広げよう
+</footer>
+
+<script>
+// ===== み教え原典データ（浄化療法学習用データ①より） =====
+const MIEOSHI = {
+  // 浄化作用の基本
+  joka_kihon: {
+    title: '浄化作用の仕組み',
+    blocks: [
+      {
+        source: '浄化療法学習用データ①',
+        text: '浄化作用とは体内に固結せる毒素が溶解し体外に排除される現象であって、これが医学上の所謂病気なのである。従って病気は治るためのものであって、吾人の肉体の自然の清潔法であることが分かるのである。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '浄化作用には第一と第二がある。第一浄化作用とは毒素が人体各所に集溜固結するまでの過程で、その間は苦痛がない。第二浄化作用は固結した毒素が溶解し排泄される時で、この際発熱・痛苦等が現れる。これが病気の本態である。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '平均浄化作用というものがある。一局所の固結が溶解すると、他の局所にある固結も平均的に溶け出す。これが浄化療法によって思わぬ所の病気が治るゆえんである。'
+      }
+    ]
+  },
+  // 腎臓の重要性
+  jinzo: {
+    title: '腎臓——施術の根本急所',
+    blocks: [
+      {
+        source: '浄化療法学習用データ①',
+        text: '本療法は、腎臓医術と言っても差支えないほど腎臓に関係が深い。腎臓の活動を完全にすることが、あらゆる疾患の治癒の唯一の方法であり、施術においては腎臓部位は最も重要である。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '三毒素（然毒・尿毒・薬毒）は腎臓部に集溜して萎縮腎となり、処理能力が低下すると余剰尿素が全身に溢れ出す。余剰尿素は背部から肩へ、首へ、さらに頭脳・眼・耳・鼻等へと上昇してゆく。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '腎臓は後天的に人体に入った毒素の浄化機関である。腎臓を中心に施術することで、全身の毒素排除が促進される。'
+      }
+    ]
+  },
+  // 肩の重要性
+  kata: {
+    title: '肩——最重要急所',
+    blocks: [
+      {
+        source: '浄化療法学習用データ①',
+        text: '肩は人体において最重要な急所である。肩は頭の入口であり上下半身のつなぎ目となっている。腎臓が薬毒を処理しきれない時、その余分が肩に固まる。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '肩を柔らかくすると、肺・心臓・胃の三位一体が改善される。肩が柔らかい人は健康であり、肩の状態は健康診断の指標となる。前・後・上の三方向から施術するのがよい。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '肩の凝りを解くことで、首・頭部への血流と神経の通りが改善し、頭痛・眼の疲れ・耳鳴り等の上部の症状も緩和される。'
+      }
+    ]
+  },
+  // 頭部の重要性
+  tobu: {
+    title: '頭部・後頭部——浄化の出口',
+    blocks: [
+      {
+        source: '浄化療法学習用データ①',
+        text: '前頭部は理智を司る「高天原」であり、人間において最も大事な場所である。後頭部は感情を司り、前頭部の毒素も後頭部を経由して排泄される。後頭部が最重要急所である。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '大抵の病人は、まず頭の中心から浄霊するのがよい。腎臓から上昇した余剰尿素は頸部を経て頭部に達し、前頭部・後頭部・延髄付近に集溜する。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '延髄部は特に重要で、眩暈・不眠・近視・中耳炎・耳鳴り等の原因となる固結が集まる急所である。'
+      }
+    ]
+  },
+  // 心臓
+  shinzo: {
+    title: '心臓——火素を吸収する霊的機関',
+    blocks: [
+      {
+        source: '浄化療法学習用データ①',
+        text: '心臓は霊界より火素を吸収する機関である。肺は水素、胃は土素を吸収する。肩胛骨と脊柱の間の毒結が心臓を圧迫している。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '心臓活動が旺盛になると肺活動も強化され、食欲が増進し、性格も改善されて愛が湧き出るようになる。背面の心臓部と左肩周囲が施術急所となる。'
+      }
+    ]
+  },
+  // 楽屋と舞台
+  rakuya: {
+    title: '楽屋と舞台——施術の急所を知る',
+    blocks: [
+      {
+        source: '浄化療法学習用データ①',
+        text: '病気には「楽屋」（原因の所在）と「舞台」（症状の現れる場所）がある。施術は症状（舞台）ではなく、原因（楽屋）に対して行うことが根本である。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '毒素の集溜する個所：①神経を多く使う個所、②人体静止時の下部、③同一動作の力点部、④薬の重軽による集溜個所（重い薬→膝以下・足裏、軽い薬→背部・胸部）。'
+      }
+    ]
+  },
+  // 各疾患と急所
+  shikkan_kyusho: {
+    title: '各症状と施術急所——み教えより',
+    blocks: [
+      {
+        source: '浄化療法学習用データ①',
+        text: '頭痛（毒血性）：前頭部・こめかみ、頸部淋巴腺が急所。脳溢血・中風：頸の固まり（左右いずれか）と後頭部。眩暈・不眠：右側後頸部延髄付近が急所。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '近視・乱視：後頭部・延髄付近。中耳炎・耳鳴り：延髄部、耳下腺。蓄膿症：鼻柱両側、眉間、後頭部。扁桃腺炎：頸部淋巴腺が急所。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '狭心症・弁膜症：心臓周囲（左肩）、背面心臓部。肺結核：肩胛部・頸部のグリグリ、胃部水膿。喘息（心臓性）：横隔膜下辺、心臓裏面。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '胃潰瘍・胃下垂：胃外部毒結。腎臓病：背面腎臓部（最重要）。肝臓病・黄疸：肝臓外部毒結、右背面腎臓。糖尿病：膵臓・肝臓下部、左腎臓。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '婦人病全般：腎臓、下腹部、股間鼠蹊部。腰痛・坐骨神経痛：腎臓・腎盂、尾てい骨付近。高血圧：左右顎下の凝り。痔疾：後頭部、股間鼠蹊部。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '癌：各部位の毒結（末期は極めて軽く施術すること）。'
+      }
+    ]
+  },
+  // 日常健康法
+  nichijo: {
+    title: '日常の健康法——自然に従う',
+    blocks: [
+      {
+        source: '浄化療法学習用データ①',
+        text: '自然浄化作用を基本とする。薬で浄化を止めないことが大切。風邪は体内の清潔法であり、自然に経過させることが根本である。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '下痢・白帯下は毒素排泄の浄化であり、止めることは逆効果。氷冷・温熱療法は浄化を停止させるため行わない。便秘に下剤を使うことは悪化させる。'
+      },
+      {
+        source: '浄化療法学習用データ①',
+        text: '万有は固まる→崩壊するという法則がある。毒素は固結すると解きにくくなる。浄化療法によって早期に溶解排除することが健康の要諦である。'
+      }
+    ]
+  }
+};
+
+// ===== メッセージデータ =====
+const MESSAGES = [
+  {
+    id: 1, cat: 'life', catLabel: '生き方', catIcon: '✦', catClass: 'cat-life',
+    source: '究極の健康法',
+    title: '大自然のままに行く',
+    body: '大自然に逆らえば滅び、大自然に従えば栄えます。何事も「お任せ」しきって、クヨクヨ心配しないことが大切です。心配するという想念そのものが一種の執着。これを手放すことから、本当の平和が生まれます。',
+    quote: '人間なるものは大自然の中に呼吸し、大自然の力によって生育するのである。大自然のままに行く、すなわち大自然に習うことこそ、天意に習うことである。',
+    action: '今日一日、「すべてはお任せ」と心の中でつぶやいてみましょう。心配事が浮かんだら、いったん手放してみてください。',
+    mieoshi_key: 'joka_kihon'
+  },
+  {
+    id: 2, cat: 'life', catLabel: '生き方', catIcon: '✦', catClass: 'cat-life',
+    source: '究極の健康法',
+    title: '感謝が感謝を生む',
+    body: '感謝の心は神に通じ、不平の心は悪魔に通じます。常に感謝している人は自然と幸福者となり、不平不満を言う人は不幸になる——これは事実です。',
+    quote: '感謝が感謝を生み、不平が不平をよぶとは正に真理だ。何となれば感謝の心は神に通じ不平の心は悪魔に通ずるからだ。',
+    action: '今朝目が覚めたこと、ご家族のこと、食事のこと——三つの感謝を声に出して言ってみましょう。',
+    mieoshi_key: null
+  },
+  {
+    id: 3, cat: 'joka', catLabel: '浄化療法', catIcon: '🌟', catClass: 'cat-joka',
+    source: '究極の健康法',
+    title: '病気は天の恩恵',
+    body: '病気は浄化作用によって体内の毒素が排除される、天の恩恵です。浄化が済めば必ず良くなる。「無病結構、病気結構」——これが真の安心立命です。浄化療法は、その自然治癒力を支援する実践です。',
+    quote: '私の言う病気なるものは、天の恩恵であって、病気なる浄化作用によって、体内の毒素が軽減または排除さるるのであるという意味を思う時、まことに感謝に堪えない気持ちが湧くであろう。',
+    action: '今日、家族やご近所の方に浄化療法を一回施してみましょう。「してあげる」ではなく「ともに健康になる」喜びを感じながら。',
+    mieoshi_key: 'joka_kihon'
+  },
+  {
+    id: 4, cat: 'shizen', catLabel: '自然食・農法', catIcon: '🌾', catClass: 'cat-shizen',
+    source: '究極の健康法',
+    title: '食物への感謝',
+    body: '人間は一粒の米といえども粗末にしてはなりません。米という字は「八十八」——八十八回の手数がかかる。その手間に携わった方々への感謝を忘れずに。食事の際の合掌は実によい習慣です。',
+    quote: '人間は一粒の米といえども決して粗末にしてはならないのである。食物の恩恵を忘れてはならないのである。',
+    action: '今日の食事の前に、生産者の方・自然のめぐみへの感謝を込めて手を合わせましょう。',
+    mieoshi_key: null
+  },
+  {
+    id: 5, cat: 'bijutsu', catLabel: '美術文化', catIcon: '🎨', catClass: 'cat-bijutsu',
+    source: '究極の健康法',
+    title: '恵みを楽しむ',
+    body: '森羅万象一切は人間のために存在しています。春の花、秋の紅葉、鳥のさえずり——創造主が人間を楽しませるために造られたものです。美しい花を飾り、美しい音楽を聴き、美を日常に取り入れることは天の意志に叶うことです。',
+    quote: '綺麗な花が咲き、いい景色があるっていうのは、造物主がこれを無駄に作ったのではない、人間を楽しませるために作られたんです。',
+    action: '今日は玄関や食卓に一輪でも花を飾ってみましょう。',
+    mieoshi_key: null
+  },
+  {
+    id: 6, cat: 'life', catLabel: '生き方', catIcon: '✦', catClass: 'cat-life',
+    source: '究極の健康法',
+    title: '人を幸福にすることが自分の幸福',
+    body: '「私は若い頃から人を喜ばせることが好きで、ほとんど道楽のようになっている」と岡田先生はおっしゃいます。人を幸福にしなければ、自分は幸福になりえない——これが幸福の根本法則です。',
+    quote: '私は、「人を幸福にしなければ、自分は幸福になりえない」と常に言うのである。',
+    action: '今日、身近な方に「ありがとう」と心を込めて伝えましょう。',
+    mieoshi_key: null
+  },
+  {
+    id: 7, cat: 'life', catLabel: '生き方', catIcon: '✦', catClass: 'cat-life',
+    source: '究極の健康法',
+    title: '誠を根本とする',
+    body: '「世界も、国家も、個人も、あらゆる問題を解決する鍵は『誠』の一字である」。約束を守る、時間を守る、相手の気持ちを察する——これが誠の実践です。',
+    quote: '世界も、国家も、個人も、あらゆる問題を解決する鍵は「誠」の一字である。',
+    action: '今日は一つの約束を必ず守り抜きましょう。',
+    mieoshi_key: null
+  },
+  {
+    id: 8, cat: 'life', catLabel: '生き方', catIcon: '✦', catClass: 'cat-life',
+    source: '究極の健康法',
+    title: '謙譲の徳・下座の行',
+    body: '「稔るほど頭を下げる稲穂かな」——威張りたがる、偉く見せたがる、これは逆効果。謙虚に、人より先に相手を立てる姿勢が、周囲から本当に慕われる人を作ります。',
+    quote: '謙譲の徳といい、下座の行ということは実に貴いもので、文化生活において殊にそうである。',
+    action: '今日は人の話をじっくり最後まで聴き、自分の意見を述べる前に相手の言葉を繰り返してみましょう。',
+    mieoshi_key: null
+  },
+  {
+    id: 9, cat: 'joka', catLabel: '浄化療法', catIcon: '🌟', catClass: 'cat-joka',
+    source: '霊を主とした生き方',
+    title: '霊主体従の法則',
+    body: '人間は霊と体から成り立っており、霊が主で体が従——これが万有の法則です。病気は体の症状ですが、その根本は霊の曇りにあります。浄化療法は霊体一致の法則に沿った実践です。',
+    quote: '人間は霊と体との両面から成り立っており、霊が主で体が従となっているのであって、これが万有の法則である。',
+    action: '今日の浄化療法の施術の前に、「霊の曇りが解消されますように」と心の中で祈念してみましょう。',
+    mieoshi_key: 'rakuya'
+  },
+  {
+    id: 10, cat: 'shizen', catLabel: '自然食・農法', catIcon: '🌾', catClass: 'cat-shizen',
+    source: '霊を主とした生き方',
+    title: '清浄な土が霊気ある作物を育てる',
+    body: '「清浄な土が、霊気の濃い作物を作り、それを食することで人間は心身の健康を保つことができる」（明主様）。食は単なる栄養補給ではなく、霊的な実践です。',
+    quote: '土と作物と人の健康のつながりこそが、本当の食と医療の関係である。',
+    action: '今日の食事に、自然農法・有機食材を一品取り入れましょう。',
+    mieoshi_key: null
+  },
+  {
+    id: 11, cat: 'bijutsu', catLabel: '美術文化', catIcon: '🎨', catClass: 'cat-bijutsu',
+    source: '究極の健康法',
+    title: '善を楽しむ喜び',
+    body: '「霊性が高くなってくると、善を楽しむ、善い事をすることがとても面白いのであります」。MOA美術館の展覧会鑑賞、音楽会、花を飾ること——これらはすべて霊性向上の実践です。',
+    quote: '善の娯しみを続ければ続けるほど、そこに健康と幸福が生まれ発展があり、成功があるのであります。',
+    action: '今日は音楽を意識して聴いたり、美しいと感じるものを手に取ったりしてみましょう。',
+    mieoshi_key: null
+  },
+  {
+    id: 12, cat: 'life', catLabel: '生き方', catIcon: '✦', catClass: 'cat-life',
+    source: '究極の健康法',
+    title: '一歩一歩向上する',
+    body: '「人は常に進歩向上を心掛けねばならない」。物質的な向上だけでなく、魂の進歩向上——人格の向上こそが根本です。ほんのわずかずつでいい。「そのようにしようとする心掛け、それだけでもう立派な人間になっている」。',
+    quote: '一歩一歩完全人間すなわち世にいう人格完成に近づかんとする努力の生活であらねばならない。',
+    action: '今日一日の終わりに、「昨日より少し良い自分だったか」を振り返ってみましょう。',
+    mieoshi_key: null
+  },
+  {
+    id: 13, cat: 'life', catLabel: '生き方', catIcon: '✦', catClass: 'cat-life',
+    source: '究極の健康法',
+    title: '感じの良い人になる',
+    body: '「感じが良い」ということが、処世上案外重要です。感じのいい人に接すると次から次へと広がり、心地よい社会ができる。その根本は「利他愛の精神」——相手の満足と喜びを自分の喜びとすることです。',
+    quote: '私は何事でも自分の利益や自分の満足は後廻しにして、人が満足し喜ぶことにのみ心を置いている。',
+    action: '今日は「相手が喜ぶこと」を最初に考えてから行動してみましょう。',
+    mieoshi_key: null
+  },
+  {
+    id: 14, cat: 'joka', catLabel: '浄化療法', catIcon: '🌟', catClass: 'cat-joka',
+    source: '霊を主とした生き方',
+    title: '守護神が働きやすい体に',
+    body: '「浄霊してもらうとその人は浄まるから正守護神が働きよいのです。曇りがあると、正守護神がいくら助けようと思ってもできません」。浄化療法は守護神のお働きを引き出す実践でもあります。',
+    quote: '浄霊してもらうとその人は浄まるから正守護神が働きよいのです。',
+    action: '今日は自分自身も家族も、浄化療法を通じて守護神が働きやすい状態にしてあげましょう。',
+    mieoshi_key: 'joka_kihon'
+  },
+  {
+    id: 15, cat: 'shizen', catLabel: '自然食・農法', catIcon: '🌾', catClass: 'cat-shizen',
+    source: '究極の健康法',
+    title: '衣食住の美を整える',
+    body: '「人間の衣食住は、分相応を越えない限り、できるだけ美しくすべきで、これが恩恵を与えたまう天の意志に叶う」。質素ならばいいのではなく、美しい食卓、清潔な住まい、心を込めた料理こそが天の意志です。',
+    quote: '衣食住は分相応を越えない限り、できるだけ美しくすべきで、これが恩恵を与えたまう天の意志に叶うのである。',
+    action: '今日の食卓を少しだけ美しく整えてみましょう。',
+    mieoshi_key: null
+  },
+  {
+    id: 16, cat: 'life', catLabel: '生き方', catIcon: '✦', catClass: 'cat-life',
+    source: '霊を主とした生き方',
+    title: '夜昼転換——今この時代の意味',
+    body: '霊界では、昭和6年6月15日を境に夜の世界から昼の世界へと転換が始まりました。私たちは今、その歴史的転換期を生きています。箱根の建設の進展は、この夜昼転換の現れです。',
+    quote: '今や霊界においては、何千年目か何万年目かに当然来るべき昼夜の切り替え時が来たのである。',
+    action: '今日は「自分は歴史的な時代に生かされている」という感謝と責任を意識して、三大事業の一つを丁寧に実践してみましょう。',
+    mieoshi_key: null
+  },
+  {
+    id: 17, cat: 'life', catLabel: '生き方', catIcon: '✦', catClass: 'cat-life',
+    source: '究極の健康法',
+    title: '小さく始める',
+    body: '「大自然から学んだ。赤ん坊が年月を経て一人前になるように、小さな種が巨木になるように——何事もできるだけ小さく始めることを決心した」。焦らず、今できることから一歩一歩。',
+    quote: '小さく始めることこそ真理である。この理を忠実に実行すれば必ず大成する。',
+    action: '今日から取り組みたい三大事業の実践を一つ決めて、まず「小さな一歩」だけ踏み出してみましょう。',
+    mieoshi_key: null
+  },
+  {
+    id: 18, cat: 'bijutsu', catLabel: '美術文化', catIcon: '🎨', catClass: 'cat-bijutsu',
+    source: '究極の健康法',
+    title: '家族で美を楽しむ',
+    body: '「余財あれば社会公共のために費やし、困窮者を助け、時々は家族を引き連れ映画、演劇、旅行等を娯しむ。こういうやり方であれば一家は団欒し、妻は夫を尊敬し感謝するようになる」。',
+    quote: '善を楽しむことを教えたい。家族を引き連れ映画、演劇、旅行等を娯しむ。一家は団欒し健康も恵まれ長寿も保ち得らるる。',
+    action: '今週、家族との「美を楽しむ時間」を計画してみましょう。',
+    mieoshi_key: null
+  },
+  {
+    id: 19, cat: 'life', catLabel: '生き方', catIcon: '✦', catClass: 'cat-life',
+    source: '究極の健康法',
+    title: '良いことは諦めないが肝心',
+    body: '「失敗しても、笑われても諦めないで、どうしてもやり遂げるという人が発展します」。悪いことは「諦めが肝心」、良いことは「諦めないが肝心」——三大事業の実践も、まず諦めないことから。',
+    quote: '良いことは諦めないが肝心。一度転んだらもうしようとしないなんていうんじゃだめです。',
+    action: '三大事業の中で「しばらく遠ざかっていた実践」を思い出してください。今日から再び始めてみましょう。',
+    mieoshi_key: null
+  },
+  {
+    id: 20, cat: 'life', catLabel: '生き方', catIcon: '✦', catClass: 'cat-life',
+    source: '究極の健康法',
+    title: '大きな愛情をもつ',
+    body: '「神の愛は大乗愛であるから、無限に全人類を愛する」。MOAのライフスタイルケアも、すべての人を対象とした大乗愛の実践です。',
+    quote: '無差別的愛で臨むならば、誰しも快く接することができ、喜んで人が集まって来るのは当然であり、発展するのは間違いない。',
+    action: '今日は「いつもと違う方」に心を向けてみましょう。',
+    mieoshi_key: null
+  },
+  // 追加：浄化療法学習データより
+  {
+    id: 21, cat: 'joka', catLabel: '浄化療法', catIcon: '🌟', catClass: 'cat-joka',
+    source: '浄化療法学習用データ①',
+    title: '腎臓——あらゆる病の根本',
+    body: '本療法は「腎臓医術」とも言えるほど腎臓に関係が深い。三毒素（然毒・尿毒・薬毒）が腎臓部に集溜し、処理能力が低下すると余剰尿素が全身に溢れ出す。腎臓の活動を完全にすることがあらゆる疾患治癒の唯一の方法である。',
+    quote: '本療法は、腎臓医術と言っても差支えないほど腎臓に関係が深い。腎臓の活動を完全にすることが、あらゆる疾患の治癒の唯一の方法である。',
+    action: '今日の施術では、まず背面の腎臓部位から始め、毒素の流れを上から下へ促しましょう。',
+    mieoshi_key: 'jinzo'
+  },
+  {
+    id: 22, cat: 'joka', catLabel: '浄化療法', catIcon: '🌟', catClass: 'cat-joka',
+    source: '浄化療法学習用データ①',
+    title: '肩——最重要急所を知る',
+    body: '肩は頭の入口であり上下半身のつなぎ目。腎臓が薬毒を処理しきれない分が肩に固まる。肩を柔らかくすると肺・心臓・胃の三位一体が改善される。肩が柔らかい人は健康——肩の状態は健康診断の指標となる。',
+    quote: '肩は人体において最重要な急所である。肩を柔らかくすると、肺・心臓・胃の三位一体が改善される。',
+    action: '今日の施術で、肩を前・後・上の三方向から丁寧に施術しましょう。肩の変化が全身に波及します。',
+    mieoshi_key: 'kata'
+  },
+  {
+    id: 23, cat: 'joka', catLabel: '浄化療法', catIcon: '🌟', catClass: 'cat-joka',
+    source: '浄化療法学習用データ①',
+    title: '楽屋と舞台——急所を見極める',
+    body: '病気には「楽屋」（原因の所在）と「舞台」（症状の現れる場所）がある。症状（舞台）ではなく原因（楽屋）に施術することが根本。頭痛なら首・肩、目の疲れなら後頭部・延髄——楽屋を知ることが施術の要です。',
+    quote: '病気には「楽屋」（原因の所在）と「舞台」（症状の現れる場所）がある。施術は症状（舞台）ではなく、原因（楽屋）に対して行うことが根本である。',
+    action: '今日は施術する前に「楽屋はどこか？」を考えてみましょう。症状の場所だけでなく、根本の急所を探してください。',
+    mieoshi_key: 'rakuya'
+  },
+  {
+    id: 24, cat: 'joka', catLabel: '浄化療法', catIcon: '🌟', catClass: 'cat-joka',
+    source: '浄化療法学習用データ①',
+    title: '浄化の三段階を理解する',
+    body: '浄化作用には段階がある。第一浄化（毒素の集溜・固結）では痛みはない。第二浄化（固結の溶解・排泄）で発熱・痛苦が現れる。これが「病気」の本態。浄化が済めば必ず良くなる——これを知っていることが安心立命の基です。',
+    quote: '第二浄化作用は固結した毒素が溶解し排泄される時で、この際発熱・痛苦等が現れる。これが病気の本態である。',
+    action: '病気の方に施術する際、「これは浄化です、良くなっている証拠です」と安心して伝えましょう。',
+    mieoshi_key: 'joka_kihon'
+  },
+  {
+    id: 25, cat: 'joka', catLabel: '浄化療法', catIcon: '🌟', catClass: 'cat-joka',
+    source: '浄化療法学習用データ①',
+    title: '自然の浄化を妨げない',
+    body: '風邪は体内の清潔法。下痢・発熱は毒素排泄の浄化作用。氷冷・温熱療法・下剤はすべて浄化を停止させる。薬を使わず自然に経過させることが、最も速く根本から健康に近づく道である。',
+    quote: '自然浄化作用を基本とする。薬で浄化を止めないことが大切。風邪は体内の清潔法であり、自然に経過させることが根本である。',
+    action: '今日は「体の浄化を妨げない」ことを意識しましょう。すぐに薬で止めようとする前に、浄化療法で自然治癒を支援してみてください。',
+    mieoshi_key: 'nichijo'
+  }
+];
+
+// ===== 施術提案データ（学習データ反映版） =====
+const SESSHU_PATTERNS = [
+  {
+    theme: 'jinzo',
+    title: (t) => `今日はまず腎臓から。${t}分の根本施術を`,
+    body: '腎臓は本療法の根本急所。三毒素（然毒・尿毒・薬毒）が腎臓部に集溜し、処理能力が低下すると余剰尿素が全身に溢れ出します。まず腎臓を施術し、毒素の流れを促しましょう。',
+    quote: '本療法は、腎臓医術と言っても差支えないほど腎臓に関係が深い。腎臓の活動を完全にすることが、あらゆる疾患の治癒の唯一の方法である。',
+    kyusho: [
+      { icon: '🔵', name: '背面・腎臓部', desc: '両腎臓を背面からゆっくり施術。毒素の溶解を促す最重要急所' },
+      { icon: '💫', name: '肩・首', desc: '腎臓から上昇した毒素が固まる急所。前・後・上から施術' },
+      { icon: '☀', name: '後頭部・延髄', desc: '腎臓毒素の終着点。頭部症状の楽屋となる' }
+    ],
+    concept: '【楽屋と舞台】頭痛・眼の疲れ・耳鳴り等の症状（舞台）の楽屋は腎臓・肩・後頭部。症状の場所だけでなく根本の楽屋から施術することが大切です。',
+    mieoshi_key: 'jinzo'
+  },
+  {
+    theme: 'kata',
+    title: (t) => `肩の凝りを解く${t}分。上半身を開放しましょう`,
+    body: '肩は頭の入口であり上下半身のつなぎ目。腎臓が薬毒を処理しきれない分が肩に固まります。肩を柔らかくすることで、肺・心臓・胃の三位一体が整います。肩の変化が全身の健康の指標です。',
+    quote: '肩を柔らかくすると、肺・心臓・胃の三位一体が改善される。肩が柔らかい人は健康——肩の状態は健康診断の指標となる。',
+    kyusho: [
+      { icon: '💫', name: '肩（前・後・上）', desc: '最重要急所。三方向から丁寧に施術する' },
+      { icon: '🔵', name: '背面・腎臓部', desc: '肩の毒素の根本源。腎臓を解くと肩も緩む' },
+      { icon: '🌿', name: '頸部リンパ腺', desc: '肩と頭部の境界。扁桃腺炎・頭痛にも関係する急所' }
+    ],
+    concept: '【楽屋と舞台】肩は多くの症状の「楽屋」です。頭痛・肩こり・手のしびれ等の舞台に対し、楽屋である腎臓→肩→首という流れを解くことが根本施術です。',
+    mieoshi_key: 'kata'
+  },
+  {
+    theme: 'tobu',
+    title: (t) => `後頭部・延髄から始める${t}分の施術を`,
+    body: '大抵の病人は、まず頭の中心から浄霊するのがよい——との岡田先生のみ教えです。腎臓から上昇した余剰尿素は頸部を経て後頭部・延髄に達します。後頭部は前頭部の毒素も排出する最重要急所です。',
+    quote: '大抵の病人はまず頭の中心を浄霊するのがよい。後頭部が最重要急所であって、前頭部の毒も後頭部経由で排泄される。',
+    kyusho: [
+      { icon: '☀', name: '後頭部・延髄', desc: '最重要急所。眩暈・不眠・近視・耳鳴りの楽屋' },
+      { icon: '🌿', name: '前頭部（高天原）', desc: '理智を司る。後頭部施術後に前頭部へ' },
+      { icon: '💫', name: '頸部・肩', desc: '後頭部と連動する急所。頸部リンパ腺も丁寧に' }
+    ],
+    concept: '【楽屋と舞台】延髄付近は眩暈・不眠・近視・中耳炎等の楽屋。症状が上部に出ていても、腎臓→肩→頸→頭部という毒素上昇の流れを理解して施術しましょう。',
+    mieoshi_key: 'tobu'
+  },
+  {
+    theme: 'shinzo',
+    title: (t) => `心臓・背部に光を送る${t}分の施術を`,
+    body: '心臓は霊界より火素を吸収する霊的機関です。肩胛骨と脊柱の間の毒結が心臓を圧迫します。背面の心臓部と左肩周囲が急所。心臓活動が旺盛になると、肺・食欲・性格（愛の湧出）まで改善されます。',
+    quote: '心臓は霊界より火素を吸収する機関。心臓活動が旺盛になると肺活動も強化され、食欲が増進し、愛が湧き出るようになる。',
+    kyusho: [
+      { icon: '💛', name: '背面・心臓部', desc: '肩胛骨と脊柱の間の毒結が心臓を圧迫する急所' },
+      { icon: '💫', name: '左肩周囲', desc: '心臓・狭心症に関係する急所' },
+      { icon: '🔵', name: '背面・腎臓部', desc: '背部毒素の根本。腎臓を解くと背部全体が緩む' }
+    ],
+    concept: '【楽屋と舞台】胸の締め付け・動悸・疲れやすさ等の舞台に対し、楽屋は背面の心臓部周囲の毒結。患部（胸）ではなく背面から施術することが根本です。',
+    mieoshi_key: 'shinzo'
+  },
+  {
+    theme: 'joka',
+    title: (t) => `${t}分、浄化の流れを自然に促しましょう`,
+    body: '浄化作用には第一（毒素集溜・苦痛なし）と第二（毒素溶解・発熱・痛苦あり）があります。病気は治るためのもの。浄化療法は自然治癒を支援する実践です。「無病結構、病気結構」——感謝の心で施術しましょう。',
+    quote: '私の言う病気なるものは、天の恩恵であって、病気なる浄化作用によって、体内の毒素が軽減または排除さるるのである。',
+    kyusho: [
+      { icon: '🔵', name: '背面・腎臓部', desc: '浄化の根本。全身の毒素処理を促す最重要部位' },
+      { icon: '💫', name: '肩・頸部', desc: '腎臓毒素の次の集溜点。上半身の流れを整える' },
+      { icon: '☀', name: '後頭部', desc: '全身の浄化の出口。頭部の詰まりを解放する' }
+    ],
+    concept: '【浄化の三段階】第一浄化（固結・無症状）→第二浄化（溶解・発熱痛苦）→排泄・回復。浄化療法はこの自然のプロセスを加速します。発熱や痛みは回復の証しです。',
+    mieoshi_key: 'joka_kihon'
+  }
+];
+
+let currentCat = 'all';
+let listCat = 'all';
+
+function getFilteredMessages(cat) {
+  return cat === 'all' ? MESSAGES : MESSAGES.filter(m => m.cat === cat);
+}
+
+function renderMessage(msg) {
+  const catColors = {
+    joka: { bg: 'rgba(139,32,32,0.1)', color: '#8B2020' },
+    shizen: { bg: 'rgba(45,74,42,0.1)', color: '#2D4A2A' },
+    bijutsu: { bg: 'rgba(26,42,74,0.1)', color: '#1A2A4A' },
+    life: { bg: 'rgba(200,168,75,0.1)', color: '#9A7A30' }
+  };
+  const c = catColors[msg.cat];
+  return `
+    <div class="msg-card">
+      <div class="msg-category" style="background:${c.bg};color:${c.color}">
+        ${msg.catIcon} ${msg.catLabel}
+      </div>
+      <div class="msg-source">📖 出典：${msg.source}</div>
+      <div class="msg-title">${msg.title}</div>
+      <div class="msg-body">${msg.body}</div>
+      <div class="msg-quote">${msg.quote}</div>
+      <div class="msg-action">
+        <div class="msg-action-title">✔ 今日の実践</div>
+        <div class="msg-action-text">${msg.action}</div>
+      </div>
+    </div>
+  `;
+}
+
+function generateMessage() {
+  const pool = getFilteredMessages(currentCat);
+  const msg = pool[Math.floor(Math.random() * pool.length)];
+  document.getElementById('msg-display').innerHTML = renderMessage(msg);
+  document.getElementById('msg-display').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function filterCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('#today .cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  generateMessage();
+}
+
+function renderList(cat) {
+  const pool = getFilteredMessages(cat);
+  const catColors = {
+    joka: { color: '#8B2020' },
+    shizen: { color: '#2D4A2A' },
+    bijutsu: { color: '#1A2A4A' },
+    life: { color: '#9A7A30' }
+  };
+  document.getElementById('msg-list-container').innerHTML = pool.map(msg => {
+    const c = catColors[msg.cat];
+    const mieoshiBtn = msg.mieoshi_key
+      ? `<span class="btn-mieoshi" onclick="event.stopPropagation(); openMieoshi('${msg.mieoshi_key}')">📜 み教え原典を読む</span>`
+      : '';
+    return `
+      <div class="msg-list-item" onclick="openModal(${msg.id})">
+        <div class="msg-list-cat" style="color:${c.color}">${msg.catIcon} ${msg.catLabel}</div>
+        <div class="msg-list-title">${msg.title}</div>
+        <div class="msg-list-preview">${msg.body}</div>
+        ${mieoshiBtn}
+      </div>
+    `;
+  }).join('');
+}
+
+function filterList(cat, btn) {
+  listCat = cat;
+  document.querySelectorAll('#list .cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList(cat);
+}
+
+function openModal(id) {
+  const msg = MESSAGES.find(m => m.id === id);
+  if (!msg) return;
+  document.getElementById('modal-title').textContent = msg.title;
+
+  const mieoshiSection = msg.mieoshi_key ? renderMieoshiSection(msg.mieoshi_key) : '';
+
+  document.getElementById('modal-body').innerHTML = `
+    <div style="font-size:0.7rem;color:var(--gold-dark);letter-spacing:0.15em;margin-bottom:8px;font-family:'Noto Sans JP',sans-serif;">
+      📖 ${msg.source} ／ ${msg.catIcon} ${msg.catLabel}
+    </div>
+    <p style="font-size:0.82rem;line-height:2;color:var(--text-sub);font-family:'Noto Sans JP',sans-serif;margin-bottom:12px;">${msg.body}</p>
+    <div class="msg-quote">${msg.quote}</div>
+    <div style="background:var(--warm-white);border-radius:6px;padding:12px;margin-top:12px;">
+      <div style="font-size:0.65rem;color:var(--gold-dark);font-family:'Noto Sans JP',sans-serif;margin-bottom:6px;font-weight:500;letter-spacing:0.1em;">✔ 今日の実践</div>
+      <div style="font-size:0.78rem;color:var(--text-main);line-height:1.8;font-family:'Noto Serif JP',serif;">${msg.action}</div>
+    </div>
+    ${mieoshiSection}
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+function openMieoshi(key) {
+  const data = MIEOSHI[key];
+  if (!data) return;
+  document.getElementById('modal-title').textContent = '📜 ' + data.title;
+  document.getElementById('modal-body').innerHTML = `
+    <div style="font-size:0.7rem;color:var(--gold-dark);letter-spacing:0.12em;margin-bottom:14px;font-family:'Noto Sans JP',sans-serif;">
+      浄化療法学習用データ① ／ み教え原典より
+    </div>
+    ${data.blocks.map((b, i) => `
+      <div class="mieoshi-block">
+        <div class="mieoshi-source">【第${i+1}節】${b.source}</div>
+        <div class="mieoshi-text">${b.text}</div>
+      </div>
+    `).join('')}
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+function renderMieoshiSection(key) {
+  const data = MIEOSHI[key];
+  if (!data) return '';
+  return `
+    <div class="mieoshi-section">
+      <div class="mieoshi-section-title">📜 み教え原典——${data.title}</div>
+      ${data.blocks.slice(0, 2).map((b, i) => `
+        <div class="mieoshi-block">
+          <div class="mieoshi-source">【第${i+1}節】${b.source}</div>
+          <div class="mieoshi-text">${b.text}</div>
+        </div>
+      `).join('')}
+      ${data.blocks.length > 2 ? `<div style="text-align:center;margin-top:8px;"><span class="btn-mieoshi" onclick="openMieoshi('${key}')">📜 全文を読む</span></div>` : ''}
+    </div>
+  `;
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+  }
+}
+
+function generateSesshu() {
+  const times = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60];
+  const time = times[Math.floor(Math.random() * times.length)];
+  const pattern = SESSHU_PATTERNS[Math.floor(Math.random() * SESSHU_PATTERNS.length)];
+
+  const kyushoHTML = pattern.kyusho.map(k => `
+    <div class="sesshu-kyusho-item">
+      <span class="sesshu-kyusho-icon">${k.icon}</span>
+      <div class="sesshu-kyusho-body">
+        <div class="sesshu-kyusho-name">${k.name}</div>
+        <div class="sesshu-kyusho-desc">${k.desc}</div>
+      </div>
+    </div>
+  `).join('');
+
+  const parts = makeParts(time, pattern.kyusho);
+  const partsHTML = parts.map(p => `
+    <div class="sesshu-part-item">
+      <span class="sesshu-part-icon">${p.icon}</span>
+      <div>
+        <div class="sesshu-part-text">${p.name}</div>
+        <div class="sesshu-part-time">約${p.min}分</div>
+      </div>
+    </div>
+  `).join('');
+
+  const mieoshiBtn = pattern.mieoshi_key
+    ? `<div style="text-align:center;margin:14px 18px 0;">
+        <span class="btn-mieoshi" style="font-size:0.68rem;" onclick="openMieoshi('${pattern.mieoshi_key}')">📜 この施術のみ教え原典を読む</span>
+       </div>`
+    : '';
+
+  document.getElementById('sesshu-display').innerHTML = `
+    <div class="sesshu-card">
+      <div class="sesshu-time-block">
+        <div class="sesshu-label">✦ 岡田先生からの施術のご提案 ✦</div>
+        <div class="sesshu-min-label">最低</div>
+        <div>
+          <span class="sesshu-time">${time}</span>
+          <span class="sesshu-time-unit">分</span>
+        </div>
+      </div>
+
+      <div class="sesshu-msg">
+        <div class="sesshu-msg-title">${pattern.title(time)}</div>
+        <div class="sesshu-msg-body">${pattern.body}</div>
+      </div>
+
+      <div class="sesshu-quote">${pattern.quote}</div>
+
+      <div class="sesshu-kyusho" style="margin-top:14px;">
+        <div class="sesshu-kyusho-title">⚡ 今日の施術急所（楽屋）</div>
+        ${kyushoHTML}
+      </div>
+
+      <div class="sesshu-concept">
+        <div class="sesshu-concept-title">💡 施術のポイント</div>
+        <div class="sesshu-concept-body">${pattern.concept}</div>
+      </div>
+
+      ${mieoshiBtn}
+
+      <div class="sesshu-parts" style="margin-top:14px;">
+        <div class="sesshu-parts-title">✔ 施術の目安配分（${time}分）</div>
+        <div class="sesshu-parts-grid">${partsHTML}</div>
+      </div>
+
+      <div style="padding:12px 18px 16px;">
+        <div style="font-family:'Noto Sans JP',sans-serif;font-size:0.65rem;color:var(--gold-dark);letter-spacing:0.12em;margin-bottom:6px;">📜 浄化作用の三段階</div>
+        <div class="sesshu-joka-process">
+          <div class="joka-step">
+            <span class="joka-step-num">第一</span>
+            <span class="joka-step-name">集溜</span>
+            <span class="joka-step-desc">毒素が固結<br>（症状なし）</span>
+          </div>
+          <div class="joka-step" style="background:rgba(139,32,32,0.06);border-color:rgba(139,32,32,0.2);">
+            <span class="joka-step-num">第二</span>
+            <span class="joka-step-name">溶解</span>
+            <span class="joka-step-desc">発熱・痛苦<br>（浄化の証）</span>
+          </div>
+          <div class="joka-step" style="background:rgba(45,74,42,0.06);border-color:rgba(45,74,42,0.2);">
+            <span class="joka-step-num">回復</span>
+            <span class="joka-step-name">排泄</span>
+            <span class="joka-step-desc">毒素が抜け<br>快方へ</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('sesshu-display').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function makeParts(total, kyusho) {
+  const numParts = total <= 15 ? 2 : total <= 30 ? 3 : total <= 45 ? 4 : 5;
+  const selectedKyusho = kyusho.slice(0, Math.min(numParts, kyusho.length));
+
+  // 残りは汎用部位で補完
+  const extra = [
+    { icon: '🌟', name: '胸部・腹部' },
+    { icon: '✨', name: '手・腕' },
+    { icon: '🌸', name: '脚部・足裏' }
+  ];
+  while (selectedKyusho.length < numParts) {
+    selectedKyusho.push(extra[selectedKyusho.length - kyusho.length] || extra[0]);
+  }
+
+  const base = Math.floor(total / numParts);
+  const rem = total - base * numParts;
+  return selectedKyusho.map((p, i) => ({ ...p, min: base + (i === 0 ? rem : 0) }));
+}
+
+function toggleDetail(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function showTab(id, btn) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// Init
+window.addEventListener('load', () => {
+  const now = new Date();
+  const days = ['日', '月', '火', '水', '木', '金', '土'];
+  const dateStr = `令和${now.getFullYear() - 2018}年 ${now.getMonth()+1}月${now.getDate()}日（${days[now.getDay()]}）`;
+  document.getElementById('today-date').textContent = dateStr;
+  if (document.getElementById('sesshu-date')) {
+    document.getElementById('sesshu-date').textContent = dateStr;
+  }
+  generateMessage();
+  renderList('all');
+});
+</script>
+</body>
+</html>
