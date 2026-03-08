@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>広島中央チーム 情報共有システム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --card: #16161f;
+  --border: #1e1e2e;
+  --border2: #252535;
+  --gold: #c8a84b;
+  --gold2: #e8c86a;
+  --gold-dim: #c8a84b44;
+  --red: #d64e3a;
+  --green: #3a8c5c;
+  --blue: #3a5fa0;
+  --text: #e8e8f0;
+  --muted: #6868a0;
+  --dim: #2a2a3a;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Noto Sans JP',sans-serif; min-height:100vh; }
+::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-track { background:var(--surface); } ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+
+/* HEADER */
+.header { background:var(--surface); border-bottom:1px solid var(--border); padding:0 20px; position:sticky; top:0; z-index:200; }
+.header-inner { max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:58px; }
+.logo { display:flex; align-items:center; gap:12px; }
+.logo-mark { width:36px; height:36px; background:linear-gradient(135deg,var(--gold),#8a6020); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+.logo-text { font-family:'Shippori Mincho',serif; font-size:14px; font-weight:700; letter-spacing:0.15em; color:var(--gold); }
+.logo-sub { font-size:10px; color:var(--muted); letter-spacing:0.1em; }
+.header-date { font-size:11px; color:var(--muted); }
+
+/* TABS */
+.tabs { background:var(--surface); border-bottom:1px solid var(--border); overflow-x:auto; }
+.tabs-inner { max-width:1100px; margin:0 auto; display:flex; }
+.tab { background:none; border:none; color:var(--muted); padding:14px 20px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:500; white-space:nowrap; border-bottom:2px solid transparent; transition:all .2s; }
+.tab.active { color:var(--gold); border-bottom-color:var(--gold); }
+.tab:hover { color:var(--text); }
+
+/* MAIN */
+.main { max-width:1100px; margin:0 auto; padding:28px 20px; }
+.page { display:none; } .page.active { display:block; }
+
+/* CARDS */
+.card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; }
+.card-title { font-family:'Shippori Mincho',serif; font-size:15px; font-weight:700; color:var(--gold); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+@media(max-width:700px){ .grid2{grid-template-columns:1fr;} .grid3{grid-template-columns:1fr 1fr;} }
+
+/* METER */
+.meter-wrap { margin-bottom:10px; }
+.meter-header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+.meter-region { font-size:13px; font-weight:700; }
+.meter-nums { font-size:11px; color:var(--muted); }
+.meter-pct { font-size:14px; font-weight:900; }
+.meter-bar { height:8px; background:var(--dim); border-radius:4px; overflow:hidden; margin-bottom:2px; }
+.meter-fill { height:100%; border-radius:4px; transition:width .8s cubic-bezier(.4,0,.2,1); }
+.meter-fill.good { background:linear-gradient(90deg,var(--green),#4caf7d); }
+.meter-fill.warn { background:linear-gradient(90deg,var(--gold),var(--gold2)); }
+.meter-fill.low  { background:linear-gradient(90deg,var(--red),#e8634a); }
+
+/* BIG METER */
+.big-meter { position:relative; width:200px; height:110px; margin:0 auto 8px; }
+.big-arc { position:absolute; inset:0; }
+.big-label { position:absolute; bottom:0; left:0; right:0; text-align:center; }
+.big-pct { font-size:32px; font-weight:900; }
+.big-sub { font-size:11px; color:var(--muted); }
+
+/* FORM */
+input,textarea,select { width:100%; background:var(--bg); border:1px solid var(--border2); border-radius:8px; color:var(--text); padding:10px 14px; font-size:13px; font-family:inherit; outline:none; transition:border-color .2s; }
+input:focus,textarea:focus,select:focus { border-color:var(--gold); }
+.field { margin-bottom:14px; }
+.label { font-size:11px; color:var(--muted); font-weight:700; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px; }
+.btn { border:none; border-radius:8px; padding:11px 22px; font-weight:700; font-size:13px; cursor:pointer; font-family:inherit; transition:all .2s; }
+.btn-gold { background:linear-gradient(135deg,var(--gold),#a07830); color:#fff; }
+.btn-gold:hover { filter:brightness(1.15); }
+.btn-sm { padding:7px 14px; font-size:12px; }
+.btn-ghost { background:none; border:1px solid var(--border2); color:var(--muted); }
+.btn-ghost:hover { border-color:var(--gold); color:var(--gold); }
+.btn-danger { background:#c0392b33; border:1px solid #c0392b55; color:#e07070; }
+
+/* TAGS */
+.tag { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+.tag-gold { background:var(--gold-dim); color:var(--gold); border:1px solid var(--gold)44; }
+.tag-green { background:#3a8c5c22; color:#5cb87a; border:1px solid #3a8c5c44; }
+.tag-blue { background:#3a5fa022; color:#6090d0; border:1px solid #3a5fa044; }
+.tag-red { background:#d64e3a22; color:#e07060; border:1px solid #d64e3a44; }
+
+/* REPORTS */
+.report-item { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:10px; cursor:pointer; transition:border-color .2s; }
+.report-item:hover { border-color:var(--gold-dim); }
+.report-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.report-name { font-weight:700; font-size:14px; }
+.report-date { font-size:11px; color:var(--muted); }
+.report-body { font-size:13px; color:var(--muted); line-height:1.7; white-space:pre-wrap; }
+.reply-box { background:var(--bg); border-radius:8px; padding:12px 14px; margin-top:10px; border-left:3px solid var(--gold); font-size:13px; line-height:1.7; white-space:pre-wrap; }
+.reply-meta { font-size:11px; color:var(--muted); margin-bottom:4px; }
+
+/* KNOWLEDGE */
+.know-item { padding:14px 16px; border-radius:9px; margin-bottom:8px; border-left:3px solid; }
+.know-item.奉告 { background:#c8a84b0e; border-color:var(--gold); }
+.know-item.講話 { background:#3a5fa00e; border-color:var(--blue); }
+.know-item.強化点 { background:#d64e3a0e; border-color:var(--red); }
+.know-title { font-weight:700; font-size:13px; margin-bottom:4px; }
+.know-body { font-size:12px; color:var(--muted); line-height:1.8; }
+.know-expanded { display:none; }
+.know-item.open .know-expanded { display:block; margin-top:8px; }
+.search-box { position:relative; margin-bottom:16px; }
+.search-box input { padding-left:36px; }
+.search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:14px; }
+
+/* TOAST */
+.toast { position:fixed; bottom:28px; right:28px; background:var(--card); border:1px solid var(--gold); border-radius:10px; padding:12px 20px; font-size:13px; z-index:1000; opacity:0; transform:translateY(10px); transition:all .3s; pointer-events:none; }
+.toast.show { opacity:1; transform:translateY(0); }
+
+/* MODAL */
+.modal-bg { position:fixed; inset:0; background:#00000088; z-index:500; display:none; align-items:center; justify-content:center; padding:20px; }
+.modal-bg.open { display:flex; }
+.modal { background:var(--card); border:1px solid var(--border2); border-radius:16px; padding:28px; max-width:560px; width:100%; max-height:80vh; overflow-y:auto; }
+.modal-title { font-family:'Shippori Mincho',serif; font-size:17px; color:var(--gold); margin-bottom:20px; }
+
+/* SECTION TITLE */
+.section-title { font-family:'Shippori Mincho',serif; font-size:19px; font-weight:700; color:var(--text); margin-bottom:6px; }
+.section-sub { font-size:12px; color:var(--muted); margin-bottom:24px; }
+.divider { height:1px; background:var(--border); margin:24px 0; }
+
+/* MVA CARD */
+.mva-category { padding:12px 16px; border-radius:9px; margin-bottom:8px; }
+.mva-cat-title { font-size:11px; font-weight:700; margin-bottom:6px; letter-spacing:0.06em; }
+.mva-cat-body { font-size:13px; line-height:1.8; white-space:pre-wrap; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-mark">光</div>
+      <div>
+        <div class="logo-text">広島中央チーム</div>
+        <div class="logo-sub">情報共有システム</div>
+      </div>
+    </div>
+    <div class="header-date" id="headerDate"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tabs-inner">
+    <button class="tab active" onclick="showPage('dashboard')">📊 ダッシュボード</button>
+    <button class="tab" onclick="showPage('mva')">🏆 強化点・MVA</button>
+    <button class="tab" onclick="showPage('reports')">📝 日報</button>
+    <button class="tab" onclick="showPage('knowledge')">📖 奉告・講話</button>
+    <button class="tab" onclick="showPage('admin')">⚙️ 管理</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ===== DASHBOARD ===== -->
+  <div class="page active" id="page-dashboard">
+    <div class="section-title">今月の状況</div>
+    <div class="section-sub">2026年（令和8年）上納達成状況 — 1月・2月累計</div>
+
+    <!-- チーム大メーター -->
+    <div class="card" style="margin-bottom:20px; text-align:center; background:linear-gradient(135deg,#16161f,#1a1a0f);">
+      <div class="card-title" style="justify-content:center;">🌟 チーム全体達成率</div>
+      <svg viewBox="0 0 200 110" width="220" style="margin:0 auto 4px;display:block;">
+        <path d="M20,100 A80,80 0 0,1 180,100" fill="none" stroke="#1e1e2e" stroke-width="14" stroke-linecap="round"/>
+        <path d="M20,100 A80,80 0 0,1 180,100" fill="none" stroke="url(#grad)" stroke-width="14" stroke-linecap="round"
+          stroke-dasharray="251" id="teamArc" stroke-dashoffset="251"/>
+        <defs>
+          <linearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#c8a84b"/>
+            <stop offset="100%" stop-color="#e8c86a"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div style="font-size:42px;font-weight:900;color:var(--gold)" id="teamPct">—</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">累計 <span id="teamCum">—</span>万 ／ 年間目標 <span id="teamTgt">—</span>万</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">第1四半期目標（3月末まで年間20%）</div>
+      <div style="margin-top:10px">
+        <span class="tag" id="q1tag">—</span>
+      </div>
+    </div>
+
+    <!-- 地域別メーター -->
+    <div class="card">
+      <div class="card-title">📍 地域別達成状況</div>
+      <div id="regionMeters"></div>
+    </div>
+  </div>
+
+  <!-- ===== MVA ===== -->
+  <div class="page" id="page-mva">
+    <div class="section-title">強化点・MVA</div>
+    <div class="section-sub">チームの現在の行動方針・強化点</div>
+    <div id="mvaContent"></div>
+  </div>
+
+  <!-- ===== 日報 ===== -->
+  <div class="page" id="page-reports">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div class="section-title">日報</div>
+        <div class="section-sub" style="margin:0">投稿・閲覧・返信</div>
+      </div>
+      <button class="btn btn-gold" onclick="openReportModal()">＋ 日報を投稿</button>
+    </div>
+
+    <div class="field">
+      <input type="text" placeholder="🔍 名前・内容で検索..." oninput="filterReports(this.value)" />
+    </div>
+
+    <div id="reportList"></div>
+  </div>
+
+  <!-- ===== 奉告・講話 ===== -->
+  <div class="page" id="page-knowledge">
+    <div class="section-title">奉告・講話・参考資料</div>
+    <div class="section-sub">行動指針・み教えの参照</div>
+
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="キーワードで検索..." oninput="filterKnowledge(this.value)" />
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;" id="knowFilter">
+      <button class="btn btn-sm tag-gold" onclick="filterKnowledgeType('全て')">全て</button>
+      <button class="btn btn-sm btn-ghost" onclick="filterKnowledgeType('奉告')">📜 奉告</button>
+      <button class="btn btn-sm btn-ghost" onclick="filterKnowledgeType('講話')">📖 講話</button>
+      <button class="btn btn-sm btn-ghost" onclick="filterKnowledgeType('強化点')">⚡ 強化点</button>
+    </div>
+
+    <div id="knowledgeList"></div>
+  </div>
+
+  <!-- ===== 管理 ===== -->
+  <div class="page" id="page-admin">
+    <div class="section-title">管理設定</div>
+    <div class="section-sub">データの更新・編集（管理者用）</div>
+
+    <!-- 上納データ更新 -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">📊 上納集計表をアップロードして更新</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.8;">
+        毎月の集計Excelファイル（上納集計表）をそのままアップロードするだけで数値が自動更新されます。
+      </div>
+
+      <!-- アップロードエリア -->
+      <label id="xlsxDropArea" style="display:block;border:2px dashed var(--border2);border-radius:12px;padding:32px;text-align:center;cursor:pointer;transition:all .2s;" 
+        ondragover="xlsxDragOver(event)" ondragleave="xlsxDragLeave(event)" ondrop="xlsxDrop(event)">
+        <div style="font-size:36px;margin-bottom:10px;">📂</div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:6px;">Excelファイルをドロップ</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">または下のボタンで選択</div>
+        <span class="btn btn-gold btn-sm">ファイルを選択</span>
+        <input type="file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="xlsxFileSelected(this)"/>
+      </label>
+
+      <!-- 読み込み状況 -->
+      <div id="xlsxStatus" style="margin-top:14px;display:none;"></div>
+
+      <!-- プレビューテーブル -->
+      <div id="xlsxPreview" style="margin-top:16px;display:none;">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:10px;">📋 読み込み結果（確認してから保存）</div>
+        <div id="xlsxPreviewTable" style="overflow-x:auto;"></div>
+        <div style="display:flex;gap:10px;margin-top:14px;">
+          <button class="btn btn-gold" onclick="confirmXlsxImport()" style="flex:1;">✅ この内容で保存する</button>
+          <button class="btn btn-ghost" onclick="cancelXlsxImport()">キャンセル</button>
+        </div>
+      </div>
+
+      <!-- 現在のデータ -->
+      <div style="margin-top:20px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">現在のデータ（最終更新：<span id="lastUpdated">—</span>）</div>
+        <div id="adminMeters"></div>
+      </div>
+    </div>
+
+    <!-- MVA編集 -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">🏆 強化点・MVAの編集</div>
+      <div class="field"><div class="label">タイトル</div><input type="text" id="mvaTitle" placeholder="例：3月強化点"/></div>
+      <div class="field"><div class="label">① 目的意識の強化</div><textarea id="mva1" rows="4" placeholder="内容を入力..."></textarea></div>
+      <div class="field"><div class="label">② 描き・計画・療院との連携強化</div><textarea id="mva2" rows="4" placeholder="内容を入力..."></textarea></div>
+      <div class="field"><div class="label">③ 具体的行動の強化</div><textarea id="mva3" rows="4" placeholder="内容を入力..."></textarea></div>
+      <div class="field"><div class="label">期待する成果</div><textarea id="mvaGoal" rows="3" placeholder="例：第1四半期（3月末まで）年間目標の20%必達"></textarea></div>
+      <button class="btn btn-gold" onclick="saveMva()" style="width:100%;">💾 保存する</button>
+    </div>
+
+    <!-- 知識追加 -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">📖 奉告・講話の追加</div>
+      <div class="field"><div class="label">種別</div>
+        <select id="knowType"><option>奉告</option><option>講話</option><option>強化点</option></select>
+      </div>
+      <div class="field"><div class="label">タイトル</div><input type="text" id="knowTitle" placeholder="例：令和8年立春祭ご面会奉告"/></div>
+      <div class="field"><div class="label">内容</div><textarea id="knowBody" rows="6" placeholder="内容を入力..."></textarea></div>
+      <button class="btn btn-gold" onclick="addKnowledge()" style="width:100%;">追加する</button>
+    </div>
+
+    <!-- データリセット -->
+    <div class="card">
+      <div class="card-title">🗑 データ管理</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-danger btn-sm" onclick="clearReports()">日報をクリア</button>
+        <button class="btn btn-danger btn-sm" onclick="clearKnowledge()">奉告・講話をクリア</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- 日報投稿モーダル -->
+<div class="modal-bg" id="reportModal">
+  <div class="modal">
+    <div class="modal-title">📝 日報を投稿する</div>
+    <div class="field"><div class="label">お名前 *</div><input type="text" id="rName" placeholder="例：田中 優"/></div>
+    <div class="field"><div class="label">日付</div><input type="date" id="rDate"/></div>
+    <div class="field"><div class="label">今日の活動・行動記録 *</div><textarea id="rBody" rows="5" placeholder="今日の活動、誰に会ったか、何に取り組んだか..."></textarea></div>
+    <div class="field"><div class="label">数値・成果（任意）</div><input type="text" id="rNum" placeholder="例：訪問3件、施術2名"/></div>
+    <div class="field"><div class="label">振り返り・気づき（任意）</div><textarea id="rReflect" rows="3" placeholder="今日の気づき、明日の課題..."></textarea></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-gold" onclick="submitReport()" style="flex:1;">投稿する</button>
+      <button class="btn btn-ghost" onclick="closeReportModal()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- 返信モーダル -->
+<div class="modal-bg" id="replyModal">
+  <div class="modal">
+    <div class="modal-title">💬 返信する</div>
+    <div id="replyTarget" style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;color:var(--muted);max-height:120px;overflow-y:auto;"></div>
+    <div class="field"><div class="label">お名前</div><input type="text" id="rpName" placeholder="例：チームリーダー"/></div>
+    <div class="field"><div class="label">返信内容 *</div><textarea id="rpBody" rows="5" placeholder="コメント・フィードバック..."></textarea></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-gold" onclick="submitReply()" style="flex:1;">返信する</button>
+      <button class="btn btn-ghost" onclick="closeReplyModal()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+
+// 2026年地域別上納データ（エクセルから読み取り）
+const DEFAULT_REGIONS = [
+  { id:'三次',      name:'三次',      target:786,   jan:58.5, feb:71.1, cum:129.5 },
+  { id:'世羅',      name:'世羅',      target:497,   jan:24.9, feb:31.4, cum:56.3  },
+  { id:'竹原',      name:'竹原',      target:865,   jan:29.1, feb:23.5, cum:52.6  },
+  { id:'大崎上島',  name:'大崎上島',  target:392,   jan:9.3,  feb:7.7,  cum:17.0  },
+  { id:'東広島',    name:'東広島',    target:2017,  jan:119.1,feb:98.9, cum:218.0 },
+  { id:'安芸郡区',  name:'安芸郡区',  target:2987,  jan:234.9,feb:255.1,cum:489.9 },
+  { id:'安佐北',    name:'安佐北',    target:943,   jan:43.5, feb:57.1, cum:100.6 },
+  { id:'安佐南',    name:'安佐南',    target:1571,  jan:106.0,feb:118.4,cum:224.3 },
+  { id:'東区',      name:'東区',      target:2305,  jan:68.2, feb:225.6,cum:293.7 },
+  { id:'中区',      name:'中区',      target:1808,  jan:103.2,feb:94.6, cum:197.8 },
+  { id:'西区',      name:'西区',      target:1231,  jan:41.6, feb:65.8, cum:107.4 },
+  { id:'南区',      name:'南区',      target:838,   jan:24.3, feb:29.1, cum:53.4  },
+  { id:'佐伯区',    name:'佐伯区',    target:1362,  jan:106.7,feb:110.3,cum:217.0 },
+  { id:'廿日市',    name:'廿日市',    target:2485,  jan:250.8,feb:250.0,cum:500.8 },
+  { id:'呉',        name:'呉',        target:5980,  jan:344.7,feb:420.5,cum:765.2 },
+  { id:'江田島',    name:'江田島(直属)',target:145,  jan:0,    feb:2.1,  cum:2.1   },
+  { id:'研セ',      name:'研セ奉献',  target:351,   jan:24.7, feb:21.0, cum:45.7  },
+];
+
+// 強化点デフォルト（3月4日版）
+const DEFAULT_MVA = {
+  title: '3月4日 最新強化点',
+  goal: '第1四半期（3月末まで）年間目標の20%必達\n主語：スタッフ\n・光輪祭に向けて「大経綸」の学びを積み上げる\n・「常識」「幸福な秘訣」等のみ教えを「哲学」として生き方にまで昇華する\n・上記を踏まえて、分院や資格者、社会の声を傾聴する\n・見聞きする事実を「光の玉」の拡大、「光明会館」の視点で見つめる\n・以上を踏まえて、新規資格講座、コミュニティの場づくりの計画などを考える',
+  items: [
+    { key:'①', label:'目的意識の強化', body:'⒜ 箱根ひな型と相呼応する個と家として、自分にとって「仮」が取れるとはどういうことか、メシヤとして世界救世教の教主に立たれた明主様と共にお迎えする春の光輪祭の意義を分院・資格者と語り合いながら深めていく\n⒝ 超宗教としてのスタート、立教の原点に立ち返る意味を求め、具体的行動まで繋がるように落とし込んでいく\n⒞ 「光の玉」と「光明会館」そして「MOA資格者づくり」をひとつのものとして、繋がりや拡がりの事実を丁寧に検証していく' },
+    { key:'②', label:'描き・計画・療院との連携の強化', body:'・改めて食育、美育の実働アドバイザーの把握\n・医師、看護師、栄養士などの名簿化\n・資格講座の価値を「MOA資格講座総合」などを活用してはっきりさせていく\n・療院・三大事業の伝え方の強化（ホームページ、SNS、チラシ）\n・資格更新・フォローアップ研修の協働開催（年間計画に落とし込む）\n・専従OBとの連携強化\n・箱根ひな型建設に万人参加で許されていく在り方を起きてくる事実や寄付金趣意書を分院・核たる資格者と学び、持ち寄る' },
+    { key:'③', label:'具体的行動の強化', body:'・療院から地域への出向計画の具体化（三次、世羅から型づくりを進める）\n・資格者の詰まっている課題に対して即対応\n・行政・議員など積極的に語り合う計画\n・各自工夫した作成した資料の共有\n・中旬のチーム検証から締め切り日までの行動を柔軟に対応できるような計画の工夫\n・感謝の想念、そこからの自然と利他の行動に繋がるように、傾聴を軸に継続施術を通して伴走し、数的結果までお許しいただく\n・3月中旬の検証のチーム会では、いただいた事実をみ教えに求め、返しながら魂から力をいただく検証をまず自ら実践して臨む' },
+  ]
+};
+
+// 奉告・講話デフォルト
+const DEFAULT_KNOWLEDGE = [
+  { id:1, type:'奉告', title:'令和8年立春祭ご面会奉告（2026年2月4日）', body:'本日は「神様のお働き――それが異って来る」とのお言葉の深さを噛みしめながらご面会に臨んでいます。\n\n■ 光明会館について\n「世界の霊的中心」である光明台に建設中の会館の名称を正式に「光明会館」とします。人類の救いのために心血を注いでいく決意を新たにしています。\n\n■ アメリカとの連携\n「食が医療を変える」との信念を実践し、医療改革と健康問題の解決に成果を挙げている医師を中心に、ロデール財団とMOAとの緊密な連携が始まろうとしています。世界文化フォーラムが8カ国20拠点から発信されることになりました。\n\n■ 国内のまちづくり\n自然農法・自然食やその底辺に流れる利他の精神といったMOAの真価が高く評価され、行政と協働し、MOA資格者を中心とした心身ともに健康なまちづくりが一気に進み始めています。\n\n■ 今年のお誓い\n「指導者は私一人だけだ」とのお言葉を魂に刻み、立教の原点に立ち返り「基本計画」を推進する。個と家の救いと完成に向かい、利他の生き方を実践するMOA資格者づくりとコミュニティづくりの描きに沿って進めていく。', tags:['光明会館','ライフスタイルケア','まちづくり'] },
+  { id:2, type:'奉告', title:'令和8年紫微宮祭ご面会奉告（2026年2月10日）', body:'■ 明主様のご昇天から71年\n明主様は神定めの三十年において地上現界での基礎的ご経綸を成し了えられ、昭和30年の本日ご昇天あそばされました。神幽現三界のご経綸を本格的にお進めになるためであったと信じています。\n\n■ 教団挙げての奉仕\n明主様は「光の玉」を持たれているのはご自身だけであること、ご昇天後も霊界からその力を揮われることを、世界救世教の教規にお定めになりました。\n\n■ 今後のお誓い\n「光明会館」建設の進展の中で現れてくる一つ一つの事実に学び、み教えに求め、込められたみ心を確かめ合いながら、明主様と心一つに結ばれる営みを着実に積み上げていく。「基本となる岡田茂吉先生の哲学」を学びつつ、その生き方を生活の場で実践する。', tags:['明主様','光明会館','帰一'] },
+  { id:3, type:'奉告', title:'令和8年豊饒祈願の日ご面会奉告（2026年3月1日）', body:'■ 立春祭を期した新たな出発\n「光の玉」が定まり「光明会館」の名称が正式決定される中、立教の原点に立ち返り新たな出発を許されました。\n\n■ ロデール研究所との復活\n明主様とロデール研究所とのご縁が時を越えて復活し、土と作物と人間の関係という明主様の哲学とその実践が新たな動きとなって現れています。\n\n■ 資格者づくりとコミュニティ\n「基本となる岡田茂吉先生の哲学」の学びと岡田式健康法・究極の健康法の実践が生活に根づくことで、食育をはじめ誰もが取得できるMOAの資格者が生まれ、明主様の人間観に基づく生き方が広がり始めています。\n\n■ オーガニックビレッジ\n「オーガニックビレッジ宣言」をされた市町村と協働して有機農業によるまちづくりが進んでいます。光明会館建設の落成を後世に託しつつ、霊界に旅立たれた多くの御霊様と一体となって奉仕の誠をお捧げする。', tags:['ロデール','オーガニック','資格者','まちづくり'] },
+  { id:4, type:'講話', title:'「常識」について（み教え抜粋）', body:'人間社会においては人間の常識というものが非常に幅を利かしているものである。そのため人間が考えた常識というものが唯一の真理のように思われているが、神の法則から見ると、それは大抵間違っていることが多い。\n\n真の意味での「常識」とは、神様の視点から見た普遍の真理に沿ったものでなくてはならない。日常の実践の中で、この「神の常識」を少しずつ体得していくことが大切である。', tags:['常識','み教え','日常実践'] },
+  { id:5, type:'講話', title:'「幸福の秘訣」について（み教え抜粋）', body:'幸福になるためには、まず人を幸福にすることである。人の幸せを心から願い、その実現のために尽くす行動が、やがて自分自身の幸福となって返ってくる。\n\n「利他」の精神——他者のために行動すること——これこそが真の幸福への近道である。感謝の心を持ち、喜びをもって人に接する姿勢が、周囲を明るくし、自らも輝かせる。', tags:['幸福','利他','感謝'] },
+  { id:6, type:'講話', title:'「霊のくもり」と浄化について（み教え抜粋）', body:'人間の病気や不幸の根本原因は「霊のくもり」にある。霊のくもりとは、誤った思想・感情・行為が霊体に積み重なったものである。\n\n浄化療法はこの霊のくもりを解消し、自然治癒力を高める実践である。施術者は、相手の霊のくもりの解消を願い、明主様のご神格への信頼をもって、誠心誠意実践することが大切である。', tags:['霊のくもり','浄化','自然治癒力'] },
+  { id:7, type:'講話', title:'「指導者は私一人だけだ」（令和8年のみ心）', body:'明主様は「指導者は私一人だけだ」と仰せられた。\n\nこれは、ご昇天後も霊界から力を揮われる明主様お一人を真の指導者として仰ぎ、一人ひとりが直接明主様に帰一する歩みをすることを意味する。組織や人に頼るのではなく、み教えに求め、み心を確かめながら実践する。これが令和8年の根本精神である。', tags:['帰一','み心','実践'] },
+  { id:8, type:'強化点', title:'3月4日 最新強化点（抜粋）', body:'■ 期待する成果\n第1四半期（3月末まで）年間目標の20%必達\n\n■ ① 目的意識の強化\n・「光の玉」と「光明会館」と「MOA資格者づくり」をひとつのものとして繋がりや拡がりの事実を丁寧に検証\n・箱根ひな型と相呼応する個と家として「仮」が取れるとはどういうことかを語り合い深める\n\n■ ② 描き・計画・連携の強化\n・療院・三大事業の伝え方強化（HP、SNS、チラシ）\n・食育・美育の実働アドバイザーの把握、名簿化\n・資格更新・フォローアップ研修の協働開催\n\n■ ③ 具体的行動の強化\n・傾聴を軸に継続施術を通して伴走し、数的結果まで\n・3月中旬検証：事実をみ教えに求め、魂から力をいただく検証を自ら実践して臨む', tags:['強化点','3月','資格者','療院'] },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  regions: JSON.parse(localStorage.getItem('regions') || 'null') || DEFAULT_REGIONS,
+  mva: JSON.parse(localStorage.getItem('mva') || 'null') || DEFAULT_MVA,
+  reports: JSON.parse(localStorage.getItem('reports') || '[]'),
+  knowledge: JSON.parse(localStorage.getItem('knowledge') || 'null') || DEFAULT_KNOWLEDGE,
+  replyTarget: null,
+};
+
+function save(key) { localStorage.setItem(key, JSON.stringify(state[key])); }
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if(id==='dashboard') renderDashboard();
+  if(id==='mva') renderMva();
+  if(id==='reports') renderReports();
+  if(id==='knowledge') renderKnowledge();
+  if(id==='admin') renderAdmin();
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard() {
+  // チーム計
+  const totalTarget = state.regions.reduce((s,r) => s + r.target, 0);
+  const totalCum = state.regions.reduce((s,r) => s + (r.cum||0), 0);
+  const teamRate = Math.round(totalCum / totalTarget * 100 * 10) / 10;
+  const q1target = 20; // 20%
+
+  document.getElementById('teamPct').textContent = teamRate + '%';
+  document.getElementById('teamCum').textContent = Math.round(totalCum).toLocaleString();
+  document.getElementById('teamTgt').textContent = totalTarget.toLocaleString();
+
+  const q1tag = document.getElementById('q1tag');
+  if(teamRate >= q1target) {
+    q1tag.textContent = `✅ Q1目標${q1target}% 達成！`;
+    q1tag.className = 'tag tag-green';
+  } else {
+    const remain = Math.round((q1target - teamRate) * 10) / 10;
+    q1tag.textContent = `Q1目標まで残り ${remain}%`;
+    q1tag.className = 'tag tag-gold';
+  }
+
+  // アーク
+  const arc = document.getElementById('teamArc');
+  const pct = Math.min(teamRate / 100, 1);
+  arc.style.strokeDashoffset = 251 - (251 * pct);
+
+  // 地域別
+  const container = document.getElementById('regionMeters');
+  container.innerHTML = state.regions.map(r => {
+    const rate = r.target ? Math.round(r.cum / r.target * 100 * 10) / 10 : 0;
+    const cls = rate >= 20 ? 'good' : rate >= 10 ? 'warn' : 'low';
+    const pct = Math.min(rate, 100);
+    return `
+      <div class="meter-wrap">
+        <div class="meter-header">
+          <span class="meter-region">${r.name}</span>
+          <span class="meter-nums">${r.cum.toLocaleString()}万 ／ ${r.target.toLocaleString()}万</span>
+          <span class="meter-pct" style="color:${rate>=20?'#5cb87a':rate>=10?'var(--gold)':'var(--red)'}">${rate}%</span>
+        </div>
+        <div class="meter-bar"><div class="meter-fill ${cls}" style="width:${pct}%"></div></div>
+      </div>`;
+  }).join('');
+}
+
+// ============================================================
+// MVA
+// ============================================================
+function renderMva() {
+  const m = state.mva;
+  const colors = ['var(--gold)','#5cb87a','#6090d0'];
+  const bgcols = ['#c8a84b0e','#3a8c5c0e','#3a5fa00e'];
+  document.getElementById('mvaContent').innerHTML = `
+    <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#16161f,#1a1a0f);">
+      <div style="font-family:'Shippori Mincho',serif;font-size:19px;font-weight:700;color:var(--gold);margin-bottom:4px;">🏆 ${m.title}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">チームの現在の行動方針</div>
+      <div style="background:var(--bg);border-radius:8px;padding:14px 16px;font-size:13px;line-height:1.9;white-space:pre-wrap;color:var(--text);">${m.goal}</div>
+    </div>
+    ${m.items.map((item,i) => `
+      <div class="mva-category" style="background:${bgcols[i]};border-left:3px solid ${colors[i]};margin-bottom:12px;">
+        <div class="mva-cat-title" style="color:${colors[i]};">${item.key} ${item.label}</div>
+        <div class="mva-cat-body">${item.body}</div>
+      </div>`).join('')}
+  `;
+}
+
+// ============================================================
+// REPORTS
+// ============================================================
+let reportFilter = '';
+
+function renderReports(filter) {
+  if(filter !== undefined) reportFilter = filter;
+  const f = reportFilter.toLowerCase();
+  const list = state.reports.filter(r =>
+    !f || r.name.toLowerCase().includes(f) || r.body.toLowerCase().includes(f)
+  );
+  const el = document.getElementById('reportList');
+  if(list.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:50px;color:var(--muted);">📭 まだ日報がありません</div>`;
+    return;
+  }
+  el.innerHTML = list.map(r => {
+    const replies = (r.replies||[]).map(rep => `
+      <div class="reply-box">
+        <div class="reply-meta">💬 ${rep.name}・${rep.date}</div>
+        ${rep.body}
+      </div>`).join('');
+    return `
+      <div class="report-item">
+        <div class="report-meta">
+          <div>
+            <div class="report-name">${r.name}</div>
+            <div class="report-date">${r.date}</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            ${r.num ? `<span class="tag tag-gold">${r.num}</span>` : ''}
+            <button class="btn btn-ghost btn-sm" onclick="openReplyModal(${r.id}, event)">返信</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteReport(${r.id}, event)">削除</button>
+          </div>
+        </div>
+        <div class="report-body">${r.body}</div>
+        ${r.reflect ? `<div style="margin-top:8px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;">💭 ${r.reflect}</div>` : ''}
+        ${replies}
+      </div>`;
+  }).join('');
+}
+
+function filterReports(v) { renderReports(v); }
+
+function openReportModal() {
+  document.getElementById('rDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('reportModal').classList.add('open');
+}
+function closeReportModal() { document.getElementById('reportModal').classList.remove('open'); }
+
+function submitReport() {
+  const name = document.getElementById('rName').value.trim();
+  const body = document.getElementById('rBody').value.trim();
+  if(!name || !body) { toast('名前と活動内容は必須です'); return; }
+  const r = {
+    id: Date.now(),
+    name,
+    date: document.getElementById('rDate').value,
+    body,
+    num: document.getElementById('rNum').value.trim(),
+    reflect: document.getElementById('rReflect').value.trim(),
+    replies: []
+  };
+  state.reports.unshift(r);
+  save('reports');
+  ['rName','rBody','rNum','rReflect'].forEach(id => document.getElementById(id).value='');
+  closeReportModal();
+  renderReports();
+  toast('✅ 日報を投稿しました！');
+}
+
+function openReplyModal(id, e) {
+  e.stopPropagation();
+  state.replyTarget = id;
+  const r = state.reports.find(r => r.id === id);
+  document.getElementById('replyTarget').textContent = `${r.name}（${r.date}）：${r.body.slice(0,100)}...`;
+  document.getElementById('replyModal').classList.add('open');
+}
+function closeReplyModal() { document.getElementById('replyModal').classList.remove('open'); }
+
+function submitReply() {
+  const name = document.getElementById('rpName').value.trim() || '管理者';
+  const body = document.getElementById('rpBody').value.trim();
+  if(!body) { toast('返信内容を入力してください'); return; }
+  const r = state.reports.find(r => r.id === state.replyTarget);
+  if(!r) return;
+  r.replies = r.replies || [];
+  r.replies.push({ name, body, date: new Date().toLocaleDateString('ja-JP') });
+  save('reports');
+  closeReplyModal();
+  document.getElementById('rpName').value = '';
+  document.getElementById('rpBody').value = '';
+  renderReports();
+  toast('✅ 返信しました！');
+}
+
+function deleteReport(id, e) {
+  e.stopPropagation();
+  if(!confirm('削除しますか？')) return;
+  state.reports = state.reports.filter(r => r.id !== id);
+  save('reports');
+  renderReports();
+  toast('削除しました');
+}
+
+// ============================================================
+// KNOWLEDGE
+// ============================================================
+let knowFilter = '', knowTypeFilter = '全て';
+
+function renderKnowledge() {
+  const f = knowFilter.toLowerCase();
+  const list = state.knowledge.filter(k => {
+    if(knowTypeFilter !== '全て' && k.type !== knowTypeFilter) return false;
+    if(!f) return true;
+    return k.title.toLowerCase().includes(f) || k.body.toLowerCase().includes(f) ||
+      (k.tags||[]).some(t => t.toLowerCase().includes(f));
+  });
+  const typeColors = { '奉告':'tag-gold', '講話':'tag-blue', '強化点':'tag-red' };
+  document.getElementById('knowledgeList').innerHTML = list.length === 0
+    ? `<div style="text-align:center;padding:40px;color:var(--muted);">該当する項目がありません</div>`
+    : list.map(k => `
+      <div class="know-item ${k.type}" onclick="toggleKnow(this)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;cursor:pointer;">
+          <div class="know-title">${k.title}</div>
+          <span class="tag ${typeColors[k.type]||'tag-gold'}">${k.type}</span>
+        </div>
+        <div class="know-expanded">
+          <div class="know-body">${k.body}</div>
+          ${(k.tags||[]).length ? `<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">${k.tags.map(t=>`<span class="tag tag-gold" style="font-size:10px;">#${t}</span>`).join('')}</div>` : ''}
+          <button class="btn btn-danger btn-sm" style="margin-top:10px;" onclick="deleteKnow(${k.id},event)">削除</button>
+        </div>
+      </div>`).join('');
+}
+
+function toggleKnow(el) { el.classList.toggle('open'); }
+
+function filterKnowledge(v) { knowFilter = v; renderKnowledge(); }
+function filterKnowledgeType(t) {
+  knowTypeFilter = t;
+  document.querySelectorAll('#knowFilter .btn').forEach(b => {
+    b.className = b.textContent.includes(t) ? 'btn btn-sm tag-gold' : 'btn btn-sm btn-ghost';
+  });
+  renderKnowledge();
+}
+
+function addKnowledge() {
+  const type = document.getElementById('knowType').value;
+  const title = document.getElementById('knowTitle').value.trim();
+  const body = document.getElementById('knowBody').value.trim();
+  if(!title || !body) { toast('タイトルと内容は必須です'); return; }
+  state.knowledge.unshift({ id: Date.now(), type, title, body, tags: [] });
+  save('knowledge');
+  document.getElementById('knowTitle').value = '';
+  document.getElementById('knowBody').value = '';
+  toast('✅ 追加しました！');
+}
+
+function deleteKnow(id, e) {
+  e.stopPropagation();
+  if(!confirm('削除しますか？')) return;
+  state.knowledge = state.knowledge.filter(k => k.id !== id);
+  save('knowledge');
+  renderKnowledge();
+  toast('削除しました');
+}
+
+function clearKnowledge() {
+  if(!confirm('全ての奉告・講話データを削除しますか？')) return;
+  state.knowledge = [];
+  save('knowledge');
+  renderKnowledge();
+  toast('削除しました');
+}
+function clearReports() {
+  if(!confirm('全日報を削除しますか？')) return;
+  state.reports = [];
+  save('reports');
+  renderReports();
+  toast('削除しました');
+}
+
+// ============================================================
+// ============================================================
+// ADMIN
+// ============================================================
+let xlsxPendingData = null; // 読み込んだが未保存のデータ
+
+function renderAdmin() {
+  // 現在のデータ一覧
+  const lastUp = localStorage.getItem('regions_updated');
+  document.getElementById('lastUpdated').textContent = lastUp
+    ? new Date(lastUp).toLocaleString('ja-JP') : '未更新';
+
+  document.getElementById('adminMeters').innerHTML = state.regions.map(r => {
+    const rate = r.target ? Math.round(r.cum / r.target * 100 * 10)/10 : 0;
+    const cls = rate >= 20 ? 'tag-green' : rate >= 10 ? 'tag-gold' : 'tag-red';
+    return `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg);border-radius:8px;margin-bottom:6px;font-size:13px;">
+      <span style="font-weight:700;min-width:80px;">${r.name}</span>
+      <span style="color:var(--muted);font-size:11px;">目標 ${r.target}万</span>
+      <span style="color:var(--muted);font-size:11px;">累計 ${r.cum}万</span>
+      <span class="tag ${cls}">${rate}%</span>
+    </div>`;
+  }).join('');
+
+  // MVA
+  document.getElementById('mvaTitle').value = state.mva.title;
+  document.getElementById('mvaGoal').value = state.mva.goal;
+  if(state.mva.items[0]) document.getElementById('mva1').value = state.mva.items[0].body;
+  if(state.mva.items[1]) document.getElementById('mva2').value = state.mva.items[1].body;
+  if(state.mva.items[2]) document.getElementById('mva3').value = state.mva.items[2].body;
+}
+
+// ── Excel ドラッグ&ドロップ ──
+function xlsxDragOver(e) {
+  e.preventDefault();
+  document.getElementById('xlsxDropArea').style.borderColor = 'var(--gold)';
+  document.getElementById('xlsxDropArea').style.background = '#c8a84b0a';
+}
+function xlsxDragLeave(e) {
+  document.getElementById('xlsxDropArea').style.borderColor = 'var(--border2)';
+  document.getElementById('xlsxDropArea').style.background = '';
+}
+function xlsxDrop(e) {
+  e.preventDefault();
+  xlsxDragLeave(e);
+  const file = e.dataTransfer.files[0];
+  if(file) parseXlsx(file);
+}
+function xlsxFileSelected(input) {
+  const file = input.files[0];
+  if(file) parseXlsx(file);
+}
+
+// ── Excelパース ──
+function parseXlsx(file) {
+  const statusEl = document.getElementById('xlsxStatus');
+  statusEl.style.display = 'block';
+  statusEl.innerHTML = `<div style="color:var(--gold);font-size:13px;">⏳ 読み込み中: ${file.name}</div>`;
+  document.getElementById('xlsxPreview').style.display = 'none';
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const wb = XLSX.read(e.target.result, { type:'array' });
+
+      // 「2026年度(R8.上納)」シートを探す
+      const sheetName = wb.SheetNames.find(s => s.includes('2026') && s.includes('上納') && !s.includes('目標案'))
+        || wb.SheetNames.find(s => s.includes('R8'))
+        || wb.SheetNames[0];
+
+      const ws = wb.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:null });
+
+      // 地域名・目標・月別実績を抽出
+      // 地域名は列28(index)、年間目標は列3、1月は列29、2月は列30、累計は29+30
+      const extracted = [];
+      for(let i = 2; i < rows.length; i++) {
+        const row = rows[i];
+        const no = row[0];
+        if(!no || typeof no !== 'number') continue;
+
+        const region = String(row[28]||'').replace(/\u3000/g,'').trim();
+        const target  = parseFloat(row[3]) || 0;   // 万円
+        const jan_raw = parseFloat(row[29]) || 0;  // 円
+        const feb_raw = parseFloat(row[30]) || 0;  // 円
+
+        // 3月以降も取れるだけ取る（列31〜40）
+        const monthly = [];
+        for(let m = 29; m <= 40; m++) {
+          const v = parseFloat(row[m]);
+          if(!isNaN(v) && v > 0) monthly.push(Math.round(v/10000*10)/10);
+          else monthly.push(0);
+        }
+
+        const cum = Math.round((jan_raw + feb_raw) / 10000 * 10) / 10;
+        const jan = Math.round(jan_raw / 10000 * 10) / 10;
+        const feb = Math.round(feb_raw / 10000 * 10) / 10;
+        const rate = target ? Math.round(cum / target * 100 * 10) / 10 : 0;
+
+        // 既存地域IDとマッチング（名前の部分一致）
+        const existingRegion = state.regions.find(r =>
+          region.includes(r.id) || r.id.includes(region) || r.name.replace(/[区市町島]/g,'') === region.replace(/[区市町島]/g,'')
+        );
+
+        extracted.push({
+          id: existingRegion?.id || region,
+          name: existingRegion?.name || region,
+          target,
+          jan, feb, cum, rate,
+          monthly,
+        });
+      }
+
+      if(extracted.length === 0) {
+        statusEl.innerHTML = `<div style="color:var(--red);font-size:13px;">⚠️ データを読み取れませんでした。「2026年度(R8.上納)」シートが含まれているか確認してください。</div>`;
+        return;
+      }
+
+      xlsxPendingData = extracted;
+      statusEl.innerHTML = `<div style="color:var(--green);font-size:13px;">✅ ${file.name} から ${extracted.length}地域のデータを読み込みました（シート：${sheetName}）</div>`;
+      showXlsxPreview(extracted);
+
+    } catch(err) {
+      statusEl.innerHTML = `<div style="color:var(--red);font-size:13px;">⚠️ 読み込みエラー: ${err.message}</div>`;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function showXlsxPreview(data) {
+  const previewEl = document.getElementById('xlsxPreview');
+  const tableEl = document.getElementById('xlsxPreviewTable');
+  previewEl.style.display = 'block';
+
+  tableEl.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead>
+        <tr style="background:var(--dim);">
+          <th style="padding:8px 10px;text-align:left;color:var(--muted);">地域</th>
+          <th style="padding:8px 10px;text-align:right;color:var(--muted);">年間目標(万)</th>
+          <th style="padding:8px 10px;text-align:right;color:var(--muted);">1月(万)</th>
+          <th style="padding:8px 10px;text-align:right;color:var(--muted);">2月(万)</th>
+          <th style="padding:8px 10px;text-align:right;color:var(--muted);">累計(万)</th>
+          <th style="padding:8px 10px;text-align:right;color:var(--muted);">達成率</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map((r,i) => `
+          <tr style="border-bottom:1px solid var(--border);background:${i%2?'var(--bg)':'transparent'}">
+            <td style="padding:7px 10px;font-weight:700;">${r.name}</td>
+            <td style="padding:7px 10px;text-align:right;">${r.target.toLocaleString()}</td>
+            <td style="padding:7px 10px;text-align:right;">${r.jan}</td>
+            <td style="padding:7px 10px;text-align:right;">${r.feb}</td>
+            <td style="padding:7px 10px;text-align:right;font-weight:700;">${r.cum}</td>
+            <td style="padding:7px 10px;text-align:right;color:${r.rate>=20?'#5cb87a':r.rate>=10?'var(--gold)':'var(--red)'};">
+              ${r.rate}%
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function confirmXlsxImport() {
+  if(!xlsxPendingData) return;
+  // 既存地域リストを更新（新規地域は追加、既存は上書き）
+  const updated = state.regions.map(r => {
+    const found = xlsxPendingData.find(d => d.id === r.id);
+    return found ? { ...r, ...found } : r;
+  });
+  // 既存にない新地域を追加
+  xlsxPendingData.forEach(d => {
+    if(!updated.find(r => r.id === d.id)) updated.push(d);
+  });
+  state.regions = updated;
+  save('regions');
+  localStorage.setItem('regions_updated', new Date().toISOString());
+  xlsxPendingData = null;
+  document.getElementById('xlsxPreview').style.display = 'none';
+  document.getElementById('xlsxStatus').innerHTML = `<div style="color:var(--green);font-size:13px;font-weight:700;">✅ 保存しました！ダッシュボードに反映されました。</div>`;
+  renderAdmin();
+  toast('✅ 上納データを更新しました！');
+}
+
+function cancelXlsxImport() {
+  xlsxPendingData = null;
+  document.getElementById('xlsxPreview').style.display = 'none';
+  document.getElementById('xlsxStatus').style.display = 'none';
+}
+
+function saveMva() {
+  state.mva = {
+    title: document.getElementById('mvaTitle').value,
+    goal: document.getElementById('mvaGoal').value,
+    items: [
+      { key:'①', label:'目的意識の強化', body: document.getElementById('mva1').value },
+      { key:'②', label:'描き・計画・療院との連携強化', body: document.getElementById('mva2').value },
+      { key:'③', label:'具体的行動の強化', body: document.getElementById('mva3').value },
+    ]
+  };
+  save('mva');
+  toast('✅ 強化点・MVAを保存しました！');
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// 日付
+document.getElementById('headerDate').textContent =
+  new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
+
+// 初期レンダリング
+renderDashboard();
+</script>
+</body>
+</html>
